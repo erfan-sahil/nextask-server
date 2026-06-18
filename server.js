@@ -15,8 +15,26 @@ for (const key of requiredEnvVars) {
 const startServer = async () => {
   await connectDatabase();
 
-  app.listen(env.port, () => {
+  const server = app.listen(env.port, () => {
+    const apiUrl = `http://127.0.0.1:${env.port}/api/v1`;
     console.log(`Server running in ${env.nodeEnv} mode on port ${env.port}`);
+    console.log(`API base URL: ${apiUrl}`);
+    if (env.port === 5000) {
+      console.warn(
+        'WARNING: Port 5000 is used by macOS AirPlay on many Macs. Use PORT=5001 in .env if you get 403 errors.'
+      );
+    }
+  });
+
+  server.on('error', (error) => {
+    if (error.code === 'EADDRINUSE') {
+      console.error(
+        `Port ${env.port} is already in use. On macOS, port 5000 is often taken by AirPlay — set PORT=5001 in .env`
+      );
+    } else {
+      console.error('Server failed to start:', error.message);
+    }
+    process.exit(1);
   });
 };
 
