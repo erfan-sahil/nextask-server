@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import { env } from '../config/env.js';
+import { env } from '../../config/env.js';
 
 let transporter = null;
 
@@ -36,12 +36,12 @@ export const emailService = {
     });
   },
 
-  async sendWelcomeEmail(to, name) {
+  async sendWelcomeEmail(to, firstName) {
     return this.send({
       to,
       subject: 'Welcome to NexTask',
-      html: `<p>Hi ${name},</p><p>Welcome to NexTask! Your account has been created.</p>`,
-      text: `Hi ${name}, Welcome to NexTask! Your account has been created.`,
+      html: `<p>Hi ${firstName},</p><p>Welcome to NexTask! Your account has been created.</p>`,
+      text: `Hi ${firstName}, Welcome to NexTask! Your account has been created.`,
     });
   },
 };

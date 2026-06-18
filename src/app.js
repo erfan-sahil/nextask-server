@@ -6,7 +6,10 @@ import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import { env } from './config/env.js';
 import routes from './routes/index.js';
-import { errorHandler, notFoundHandler } from './middlewares/error.middleware.js';
+import {
+  errorHandler,
+  notFoundHandler,
+} from './middlewares/common/error.middleware.js';
 
 const app = express();
 

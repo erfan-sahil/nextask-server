@@ -1,5 +1,5 @@
 import { ZodError } from 'zod';
-import { HTTP_STATUS } from '../constants/httpStatus.js';
+import { HTTP_STATUS } from '../../constants/httpStatus.js';
 
 export const validate = (schema) => (req, _res, next) => {
   try {

@@ -1,14 +1,14 @@
-import { authService } from '../services/auth.service.js';
-import { emailService } from '../services/email.service.js';
-import { ApiResponse } from '../utils/ApiResponse.js';
-import { asyncHandler } from '../utils/asyncHandler.js';
+import { authService } from '../../services/auth/auth.service.js';
+import { emailService } from '../../services/email/email.service.js';
+import { ApiResponse } from '../../utils/ApiResponse.js';
+import { asyncHandler } from '../../utils/asyncHandler.js';
 
 export const register = asyncHandler(async (req, res) => {
   const { user, tokens } = await authService.register(req.body);
 
   authService.setTokenCookies(res, tokens);
 
-  await emailService.sendWelcomeEmail(user.email, user.name);
+  await emailService.sendWelcomeEmail(user.email, user.firstName);
 
   res.status(201).json(
     ApiResponse.created(
@@ -27,6 +27,21 @@ export const login = asyncHandler(async (req, res) => {
     ApiResponse.ok(
       { user, accessToken: tokens.accessToken },
       'Login successful'
+    )
+  );
+});
+
+export const refresh = asyncHandler(async (req, res) => {
+  const refreshToken = req.cookies?.refreshToken;
+
+  const { user, tokens } = await authService.refresh(refreshToken);
+
+  authService.setTokenCookies(res, tokens);
+
+  res.json(
+    ApiResponse.ok(
+      { user, accessToken: tokens.accessToken },
+      'Token refreshed successfully'
     )
   );
 });

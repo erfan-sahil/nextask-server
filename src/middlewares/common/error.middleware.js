@@ -1,7 +1,7 @@
 import { ZodError } from 'zod';
-import { HTTP_STATUS } from '../constants/httpStatus.js';
-import { ApiError } from '../utils/ApiError.js';
-import { env } from '../config/env.js';
+import { HTTP_STATUS } from '../../constants/httpStatus.js';
+import { ApiError } from '../../utils/ApiError.js';
+import { env } from '../../config/env.js';
 
 export const errorHandler = (err, _req, res, _next) => {
   let statusCode = err.statusCode || HTTP_STATUS.INTERNAL_SERVER_ERROR;
