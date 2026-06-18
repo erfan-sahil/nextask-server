@@ -1,0 +1,33 @@
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+export const env = {
+  nodeEnv: process.env.NODE_ENV || 'development',
+  port: Number(process.env.PORT) || 5000,
+  isProduction: process.env.NODE_ENV === 'production',
+
+  mongodbUri: process.env.MONGODB_URI,
+
+  jwt: {
+    accessSecret: process.env.JWT_ACCESS_SECRET,
+    refreshSecret: process.env.JWT_REFRESH_SECRET,
+    accessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
+    refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
+  },
+
+  clientUrl: process.env.CLIENT_URL || 'http://localhost:3000',
+
+  smtp: {
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT) || 587,
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+    from: process.env.EMAIL_FROM || 'noreply@nextask.com',
+  },
+
+  rateLimit: {
+    windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
+    max: Number(process.env.RATE_LIMIT_MAX) || 100,
+  },
+};
