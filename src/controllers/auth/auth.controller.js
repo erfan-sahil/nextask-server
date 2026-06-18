@@ -1,5 +1,4 @@
 import { authService } from '../../services/auth/auth.service.js';
-import { emailService } from '../../services/email/email.service.js';
 import { ApiResponse } from '../../utils/ApiResponse.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 
@@ -7,8 +6,6 @@ export const register = asyncHandler(async (req, res) => {
   const { user, tokens } = await authService.register(req.body);
 
   authService.setTokenCookies(res, tokens);
-
-  await emailService.sendWelcomeEmail(user.email, user.firstName);
 
   res.status(201).json(
     ApiResponse.created(

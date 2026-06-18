@@ -1,5 +1,5 @@
 import { ZodError } from 'zod';
-import { HTTP_STATUS } from '../../constants/httpStatus.js';
+import { ApiError } from '../../utils/ApiError.js';
 
 export const validate = (schema) => (req, _res, next) => {
   try {
@@ -9,15 +9,13 @@ export const validate = (schema) => (req, _res, next) => {
       params: req.params,
     });
 
-    req.body = parsed.body ?? req.body;
-    req.query = parsed.query ?? req.query;
-    req.params = parsed.params ?? req.params;
+    // Express 5: req.query and req.params are read-only — assign body directly, merge the rest.
+    if ('body' in parsed) req.body = parsed.body;
+    if ('query' in parsed) Object.assign(req.query, parsed.query);
+    if ('params' in parsed) Object.assign(req.params, parsed.params);
 
     next();
   } catch (error) {
-    if (error instanceof ZodError) {
-      error.statusCode = HTTP_STATUS.UNPROCESSABLE_ENTITY;
-    }
-    next(error);
+    next(error instanceof ZodError ? error : ApiError.badRequest(error.message));
   }
 };

@@ -1,5 +1,7 @@
 import nodemailer from 'nodemailer';
 import { env } from '../../config/env.js';
+import { ApiError } from '../../utils/ApiError.js';
+import { logger } from '../../utils/logger.js';
 
 let transporter = null;
 
@@ -18,22 +20,34 @@ const getTransporter = () => {
   return transporter;
 };
 
+const toFriendlyEmailError = (error) => {
+  logger.error('Email delivery failed', { cause: error.message });
+
+  return ApiError.serviceUnavailable(
+    'We could not complete your request because the welcome email could not be sent. Please try again later.'
+  );
+};
+
 export const emailService = {
   async send({ to, subject, html, text }) {
     const transport = getTransporter();
 
     if (!transport) {
-      console.warn('Email not configured — skipping send');
+      logger.warn('Email not configured — skipping send');
       return null;
     }
 
-    return transport.sendMail({
-      from: env.smtp.from,
-      to,
-      subject,
-      html,
-      text,
-    });
+    try {
+      return await transport.sendMail({
+        from: env.smtp.from,
+        to,
+        subject,
+        html,
+        text,
+      });
+    } catch (error) {
+      throw toFriendlyEmailError(error);
+    }
   },
 
   async sendWelcomeEmail(to, firstName) {

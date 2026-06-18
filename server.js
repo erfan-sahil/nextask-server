@@ -1,6 +1,7 @@
 import app from './src/app.js';
 import { env } from './src/config/env.js';
 import { connectDatabase } from './src/config/database.js';
+import { logger } from './src/utils/logger.js';
 
 const requiredEnvVars = ['MONGODB_URI', 'JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET'];
 
@@ -41,11 +42,20 @@ const startServer = async () => {
 startServer();
 
 process.on('unhandledRejection', (reason) => {
-  console.error('Unhandled Rejection:', reason);
-  process.exit(1);
+  logger.error('Unhandled promise rejection', {
+    cause: reason instanceof Error ? reason.message : reason,
+    stack: reason instanceof Error ? reason.stack : undefined,
+  });
+
+  if (env.isProduction) {
+    process.exit(1);
+  }
 });
 
 process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
+  logger.error('Uncaught exception', {
+    cause: error.message,
+    stack: error.stack,
+  });
   process.exit(1);
 });

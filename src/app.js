@@ -4,10 +4,12 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import { env } from './config/env.js';
+import { ApiError } from './utils/ApiError.js';
 import routes from './routes/index.js';
 import {
   errorHandler,
   notFoundHandler,
+  requestIdMiddleware,
 } from './middlewares/common/error.middleware.js';
 import { requestLogger } from './middlewares/common/morgan.middleware.js';
 
@@ -15,6 +17,7 @@ const app = express();
 
 app.set('trust proxy', 1);
 
+app.use(requestIdMiddleware);
 app.use(requestLogger);
 
 app.use(helmet());
@@ -30,7 +33,9 @@ app.use(
     max: env.rateLimit.max,
     standardHeaders: true,
     legacyHeaders: false,
-    message: { success: false, message: 'Too many requests, please try again later' },
+    handler: (_req, _res, next) => {
+      next(ApiError.tooManyRequests());
+    },
   })
 );
 

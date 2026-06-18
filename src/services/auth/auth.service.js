@@ -1,8 +1,10 @@
 import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
 import { env } from '../../config/env.js';
 import { USER_STATUS } from '../../constants/userStatus.js';
 import { ApiError } from '../../utils/ApiError.js';
 import { User } from '../../models/user/user.model.js';
+import { emailService } from '../email/email.service.js';
 
 const ACCESS_TOKEN_MAX_AGE_MS = 15 * 60 * 1000;
 const REFRESH_TOKEN_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
@@ -68,18 +70,31 @@ export const authService = {
       throw ApiError.conflict('Username already taken');
     }
 
-    const user = await User.create({
-      firstName,
-      lastName,
-      username,
-      email,
-      password,
-    });
+    const session = await mongoose.startSession();
 
-    const tokens = generateTokens(user._id);
-    await persistRefreshToken(user, tokens.refreshToken);
+    try {
+      session.startTransaction();
 
-    return { user, tokens };
+      const [user] = await User.create(
+        [{ firstName, lastName, username, email, password }],
+        { session }
+      );
+
+      await emailService.sendWelcomeEmail(user.email, user.firstName);
+
+      const tokens = generateTokens(user._id);
+      user.refreshToken = tokens.refreshToken;
+      await user.save({ session, validateBeforeSave: false });
+
+      await session.commitTransaction();
+
+      return { user, tokens };
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
   },
 
   async login({ email, password }) {

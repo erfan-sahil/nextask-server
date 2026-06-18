@@ -48,7 +48,10 @@
       "response": []
     },
     {
-      "name": "Register",
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
       "event": [
         {
           "listen": "test",
@@ -261,6 +264,8 @@
         }
       },
       "response": []
+        }
+      ]
     }
   ]
 }
