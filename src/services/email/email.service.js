@@ -2,6 +2,7 @@ import nodemailer from 'nodemailer';
 import { env } from '../../config/env.js';
 import { ApiError } from '../../utils/ApiError.js';
 import { logger } from '../../utils/logger.js';
+import { buildWelcomeEmail } from './templates/welcomeEmail.template.js';
 
 let transporter = null;
 
@@ -51,11 +52,13 @@ export const emailService = {
   },
 
   async sendWelcomeEmail(to, firstName) {
+    const { html, text } = buildWelcomeEmail(firstName);
+
     return this.send({
       to,
-      subject: 'Welcome to NexTask',
-      html: `<p>Hi ${firstName},</p><p>Welcome to NexTask! Your account has been created.</p>`,
-      text: `Hi ${firstName}, Welcome to NexTask! Your account has been created.`,
+      subject: 'Welcome to NexTask — your account is ready',
+      html,
+      text,
     });
   },
 };
