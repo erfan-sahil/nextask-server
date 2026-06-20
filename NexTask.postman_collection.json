@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "b8e4c1f2-3a6d-4e9b-8f7c-1d2e3f4a5b6c",
     "name": "NexTask API",
-    "description": "NexTask backend API collection.\n\n1. Start server: npm run dev\n2. Server runs on http://127.0.0.1:5001\n3. Do NOT use port 5000 (macOS AirPlay blocks it)\n\nRun Login or Register first — accessToken is saved automatically for Get Me and Logout.",
+    "description": "NexTask backend API collection.\n\n1. Start server: npm run dev\n2. Server runs on http://127.0.0.1:5001\n3. Do NOT use port 5000 (macOS AirPlay blocks it)\n\nRun Login or Register first — accessToken is saved automatically.\nWorkspace requests use Bearer auth. Create Workspace saves workspaceId for Get / Update / Delete.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -18,6 +18,11 @@
     },
     {
       "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "workspaceId",
       "value": "",
       "type": "string"
     }
@@ -52,218 +57,460 @@
       "item": [
         {
           "name": "Register",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "if (pm.response.code === 201) {",
-              "    var res = pm.response.json();",
-              "    if (res.data && res.data.accessToken) {",
-              "        pm.collectionVariables.set('accessToken', res.data.accessToken);",
-              "    }",
-              "}"
-            ]
-          }
-        }
-      ],
-      "request": {
-        "auth": {
-          "type": "noauth"
-        },
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"username\": \"johndoe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"Password1\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "http://{{host}}:{{port}}/api/v1/auth/register",
-          "protocol": "http",
-          "host": [
-            "{{host}}"
-          ],
-          "port": "{{port}}",
-          "path": [
-            "api",
-            "v1",
-            "auth",
-            "register"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Login",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "if (pm.response.code === 200) {",
-              "    var res = pm.response.json();",
-              "    if (res.data && res.data.accessToken) {",
-              "        pm.collectionVariables.set('accessToken', res.data.accessToken);",
-              "    }",
-              "}"
-            ]
-          }
-        }
-      ],
-      "request": {
-        "auth": {
-          "type": "noauth"
-        },
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"Password1\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "http://{{host}}:{{port}}/api/v1/auth/login",
-          "protocol": "http",
-          "host": [
-            "{{host}}"
-          ],
-          "port": "{{port}}",
-          "path": [
-            "api",
-            "v1",
-            "auth",
-            "login"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Get Me",
-      "request": {
-        "auth": {
-          "type": "bearer",
-          "bearer": [
+          "event": [
             {
-              "key": "token",
-              "value": "{{accessToken}}",
-              "type": "string"
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var res = pm.response.json();",
+                  "    if (res.data && res.data.accessToken) {",
+                  "        pm.collectionVariables.set('accessToken', res.data.accessToken);",
+                  "    }",
+                  "}"
+                ]
+              }
             }
-          ]
-        },
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://{{host}}:{{port}}/api/v1/auth/me",
-          "protocol": "http",
-          "host": [
-            "{{host}}"
           ],
-          "port": "{{port}}",
-          "path": [
-            "api",
-            "v1",
-            "auth",
-            "me"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Refresh Token",
-      "event": [
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"username\": \"johndoe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"Password1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/auth/register",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "if (pm.response.code === 200) {",
-              "    var res = pm.response.json();",
-              "    if (res.data && res.data.accessToken) {",
-              "        pm.collectionVariables.set('accessToken', res.data.accessToken);",
-              "    }",
-              "}"
-            ]
-          }
-        }
-      ],
-      "request": {
-        "auth": {
-          "type": "noauth"
-        },
-        "method": "POST",
-        "header": [],
-        "url": {
-          "raw": "http://{{host}}:{{port}}/api/v1/auth/refresh",
-          "protocol": "http",
-          "host": [
-            "{{host}}"
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var res = pm.response.json();",
+                  "    if (res.data && res.data.accessToken) {",
+                  "        pm.collectionVariables.set('accessToken', res.data.accessToken);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
           ],
-          "port": "{{port}}",
-          "path": [
-            "api",
-            "v1",
-            "auth",
-            "refresh"
-          ]
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"Password1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/auth/login",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Me",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/auth/me",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var res = pm.response.json();",
+                  "    if (res.data && res.data.accessToken) {",
+                  "        pm.collectionVariables.set('accessToken', res.data.accessToken);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/auth/refresh",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "refresh"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/auth/logout",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "logout"
+              ]
+            }
+          },
+          "response": []
         }
-      },
-      "response": []
+      ]
     },
     {
-      "name": "Logout",
-      "request": {
-        "auth": {
-          "type": "bearer",
-          "bearer": [
+      "name": "Workspaces",
+      "item": [
+        {
+          "name": "Create Workspace",
+          "event": [
             {
-              "key": "token",
-              "value": "{{accessToken}}",
-              "type": "string"
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var res = pm.response.json();",
+                  "    if (res.data && res.data.workspace && res.data.workspace._id) {",
+                  "        pm.collectionVariables.set('workspaceId', res.data.workspace._id);",
+                  "    }",
+                  "}"
+                ]
+              }
             }
-          ]
-        },
-        "method": "POST",
-        "header": [],
-        "url": {
-          "raw": "http://{{host}}:{{port}}/api/v1/auth/logout",
-          "protocol": "http",
-          "host": [
-            "{{host}}"
           ],
-          "port": "{{port}}",
-          "path": [
-            "api",
-            "v1",
-            "auth",
-            "logout"
-          ]
-        }
-      },
-      "response": []
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"My Team\",\n  \"description\": \"Main workspace for the team\",\n  \"visibility\": \"PRIVATE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces"
+              ]
+            },
+            "description": "Creates a workspace. Slug is auto-generated from name if omitted.\n\nOptional fields: slug, logo, ownerId, status (ACTIVE | ARCHIVED)\nVisibility: PRIVATE | TEAM | PUBLIC"
+          },
+          "response": []
+        },
+        {
+          "name": "List Workspaces",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces?page=1&limit=10",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number (default: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Items per page (max: 100, default: 10)"
+                },
+                {
+                  "key": "status",
+                  "value": "ACTIVE",
+                  "description": "ACTIVE | ARCHIVED",
+                  "disabled": true
+                },
+                {
+                  "key": "visibility",
+                  "value": "PRIVATE",
+                  "description": "PRIVATE | TEAM | PUBLIC",
+                  "disabled": true
+                },
+                {
+                  "key": "search",
+                  "value": "team",
+                  "description": "Search by name or slug",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Returns workspaces owned by the authenticated user with pagination."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Workspace by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "{{workspaceId}}"
+              ]
+            },
+            "description": "Get a single workspace. Requires owner access or PUBLIC visibility."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Workspace",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"My Updated Team\",\n  \"description\": \"Updated workspace description\",\n  \"visibility\": \"TEAM\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "{{workspaceId}}"
+              ]
+            },
+            "description": "Update workspace fields. Only the owner can update.\n\nUpdatable: name, slug, description, logo, visibility, status"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Workspace",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "{{workspaceId}}"
+              ]
+            },
+            "description": "Permanently delete a workspace. Only the owner can delete."
+          },
+          "response": []
         }
       ]
     }

@@ -1,0 +1,4 @@
+export const WORKSPACE_STATUS = {
+  ACTIVE: 'ACTIVE',
+  ARCHIVED: 'ARCHIVED',
+};

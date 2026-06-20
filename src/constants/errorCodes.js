@@ -17,6 +17,7 @@ export const ERROR_CODES = {
 const DUPLICATE_FIELD_MESSAGES = {
   email: 'Email already registered',
   username: 'Username already taken',
+  slug: 'Workspace slug already exists',
 };
 
 export const getDuplicateFieldMessage = (field) =>

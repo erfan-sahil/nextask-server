@@ -1,0 +1,5 @@
+export const WORKSPACE_VISIBILITY = {
+  PRIVATE: 'PRIVATE',
+  TEAM: 'TEAM',
+  PUBLIC: 'PUBLIC',
+};
