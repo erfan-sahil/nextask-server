@@ -45,6 +45,22 @@ export const ensureCanViewWorkspace = (membership) => {
   ensureHasPermission(membership, WORKSPACE_PERMISSION.VIEW_WORKSPACE);
 };
 
+export const ensureCanCreateProject = (membership) => {
+  ensureHasPermission(membership, WORKSPACE_PERMISSION.CREATE_PROJECT);
+};
+
+export const ensureCanViewProject = (membership) => {
+  ensureHasPermission(membership, WORKSPACE_PERMISSION.VIEW_PROJECT);
+};
+
+export const ensureCanUpdateProject = (membership) => {
+  ensureHasPermission(membership, WORKSPACE_PERMISSION.UPDATE_PROJECT);
+};
+
+export const ensureCanDeleteProject = (membership) => {
+  ensureHasPermission(membership, WORKSPACE_PERMISSION.DELETE_PROJECT);
+};
+
 export const ensureCanManageTargetMember = (actorMembership, targetMember) => {
   ensureCanChangeMemberRole(actorMembership);
 

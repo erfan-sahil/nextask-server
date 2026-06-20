@@ -1,0 +1,66 @@
+import { Router } from 'express';
+import {
+  createProject,
+  listProjects,
+  getProject,
+  updateProject,
+  deleteProject,
+} from '../../controllers/project/project.controller.js';
+import {
+  loadWorkspaceByWorkspaceId,
+  requireProjectView,
+  requireProjectCreate,
+  requireProjectUpdate,
+  requireProjectDelete,
+  loadProject,
+} from '../../middlewares/project/project.middleware.js';
+import { validate } from '../../middlewares/common/validate.middleware.js';
+import {
+  createProjectSchema,
+  updateProjectSchema,
+  projectIdSchema,
+  listProjectsSchema,
+} from '../../validations/project/project.validation.js';
+
+const router = Router({ mergeParams: true });
+
+router.use(loadWorkspaceByWorkspaceId);
+
+router.post(
+  '/',
+  validate(createProjectSchema),
+  requireProjectCreate,
+  createProject
+);
+
+router.get(
+  '/',
+  validate(listProjectsSchema),
+  requireProjectView,
+  listProjects
+);
+
+router.get(
+  '/:projectId',
+  validate(projectIdSchema),
+  requireProjectView,
+  getProject
+);
+
+router.patch(
+  '/:projectId',
+  validate(updateProjectSchema),
+  requireProjectUpdate,
+  loadProject,
+  updateProject
+);
+
+router.delete(
+  '/:projectId',
+  validate(projectIdSchema),
+  requireProjectDelete,
+  loadProject,
+  deleteProject
+);
+
+export default router;
