@@ -1,8 +1,10 @@
+import mongoose from 'mongoose';
 import { Workspace } from '../../models/workspace/workspace.model.js';
 import { WORKSPACE_VISIBILITY } from '../../constants/workspaceVisibility.js';
 import { WORKSPACE_STATUS } from '../../constants/workspaceStatus.js';
 import { WORKSPACE_MESSAGES } from '../../constants/workspaceMessages.js';
 import { ApiError } from '../../utils/ApiError.js';
+import { workspaceMemberService } from '../workspace-member/workspaceMember.service.js';
 import {
   populateWorkspace,
   slugify,
@@ -29,21 +31,46 @@ export const workspaceService = {
 
     const slug = await generateUniqueSlug(baseSlug);
 
-    const workspace = await Workspace.create({
-      name: data.name,
-      slug,
-      description: data.description ?? '',
-      logo: data.logo ?? null,
-      visibility: data.visibility ?? WORKSPACE_VISIBILITY.PRIVATE,
-      ownerId,
-      status: data.status ?? WORKSPACE_STATUS.ACTIVE,
-      memberCount: 1,
-      projectCount: 0,
-      taskCount: 0,
-      lastActivityAt: new Date(),
-      createdBy: userId,
-      updatedBy: userId,
-    });
+    const session = await mongoose.startSession();
+    let workspace;
+
+    try {
+      session.startTransaction();
+
+      [workspace] = await Workspace.create(
+        [
+          {
+            name: data.name,
+            slug,
+            description: data.description ?? '',
+            logo: data.logo ?? null,
+            visibility: data.visibility ?? WORKSPACE_VISIBILITY.PRIVATE,
+            ownerId,
+            status: data.status ?? WORKSPACE_STATUS.ACTIVE,
+            memberCount: 1,
+            projectCount: 0,
+            taskCount: 0,
+            lastActivityAt: new Date(),
+            createdBy: userId,
+            updatedBy: userId,
+          },
+        ],
+        { session }
+      );
+
+      await workspaceMemberService.createOwnerMember(
+        workspace._id,
+        ownerId,
+        session
+      );
+
+      await session.commitTransaction();
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
 
     return findPopulatedWorkspaceOrThrow(workspace._id);
   },
@@ -130,6 +157,21 @@ export const workspaceService = {
 
   async delete(workspace, userId) {
     ensureWorkspaceOwnerForDelete(workspace, userId);
-    await workspace.deleteOne();
+
+    const session = await mongoose.startSession();
+
+    try {
+      session.startTransaction();
+
+      await workspaceMemberService.deleteByWorkspace(workspace._id, session);
+      await workspace.deleteOne({ session });
+
+      await session.commitTransaction();
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
   },
 };

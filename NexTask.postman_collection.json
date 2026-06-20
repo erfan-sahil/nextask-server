@@ -25,6 +25,16 @@
       "key": "workspaceId",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "memberId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "memberUserId",
+      "value": "",
+      "type": "string"
     }
   ],
   "item": [
@@ -509,6 +519,266 @@
               ]
             },
             "description": "Permanently delete a workspace. Only the owner can delete."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Workspace Members",
+      "item": [
+        {
+          "name": "Add Workspace Member",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var res = pm.response.json();",
+                  "    if (res.data && res.data.member && res.data.member._id) {",
+                  "        pm.collectionVariables.set('memberId', res.data.member._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{memberUserId}}\",\n  \"role\": \"MEMBER\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/members",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "{{workspaceId}}",
+                "members"
+              ]
+            },
+            "description": "Add a user to a workspace. Requires OWNER or ADMIN permission.\n\nRoles: ADMIN | PROJECT_MANAGER | MEMBER (OWNER cannot be assigned here)"
+          },
+          "response": []
+        },
+        {
+          "name": "List Workspace Members",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var res = pm.response.json();",
+                  "    if (res.data && res.data.members && res.data.members.length > 0) {",
+                  "        pm.collectionVariables.set('memberId', res.data.members[0]._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/members?page=1&limit=10",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "{{workspaceId}}",
+                "members"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "role",
+                  "value": "MEMBER",
+                  "description": "OWNER | ADMIN | PROJECT_MANAGER | MEMBER",
+                  "disabled": true
+                },
+                {
+                  "key": "search",
+                  "value": "john",
+                  "description": "Search by user name, username, or email",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "List members of a workspace. Requires workspace membership."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Workspace Member by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/members/{{memberId}}",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "{{workspaceId}}",
+                "members",
+                "{{memberId}}"
+              ]
+            },
+            "description": "Get a single workspace member by member record ID."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Workspace Member",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"PROJECT_MANAGER\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/members/{{memberId}}",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "{{workspaceId}}",
+                "members",
+                "{{memberId}}"
+              ]
+            },
+            "description": "Update a member role. Requires OWNER or ADMIN permission."
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Workspace Member",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/members/{{memberId}}",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "{{workspaceId}}",
+                "members",
+                "{{memberId}}"
+              ]
+            },
+            "description": "Remove a member from the workspace. OWNER/ADMIN can remove others. Members can remove themselves (except OWNER)."
           },
           "response": []
         }

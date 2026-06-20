@@ -20,6 +20,7 @@ import {
   workspaceIdSchema,
   listWorkspacesSchema,
 } from '../../validations/workspace/workspace.validation.js';
+import workspaceMemberRoutes from '../workspace-member/workspaceMember.routes.js';
 
 const router = Router();
 
@@ -27,6 +28,8 @@ router.use(authenticate);
 
 router.post('/', validate(createWorkspaceSchema), createWorkspace);
 router.get('/', validate(listWorkspacesSchema), listWorkspaces);
+
+router.use('/:workspaceId/members', workspaceMemberRoutes);
 
 router.get(
   '/:id',

@@ -18,6 +18,7 @@ const DUPLICATE_FIELD_MESSAGES = {
   email: 'Email already registered',
   username: 'Username already taken',
   slug: 'Workspace slug already exists',
+  workspaceId: 'User is already a member of this workspace',
 };
 
 export const getDuplicateFieldMessage = (field) =>
