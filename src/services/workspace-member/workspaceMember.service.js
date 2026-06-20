@@ -156,12 +156,9 @@ export const workspaceMemberService = {
       await ensureCanManageMembers(workspace, actorUserId);
       ensureMemberCanBeRemoved(member);
 
-      const actorIsOwner = isWorkspaceOwner(workspace, actorUserId);
+      const actorIsOwner = await isWorkspaceOwner(workspace, actorUserId);
 
-      if (
-        !actorIsOwner &&
-        member.role === WORKSPACE_MEMBER_ROLE.ADMIN
-      ) {
+      if (!actorIsOwner && member.role === WORKSPACE_MEMBER_ROLE.ADMIN) {
         const actorMembership = await findMemberByWorkspaceAndUser(
           workspace._id,
           actorUserId

@@ -5,10 +5,11 @@ import {
   WORKSPACE_MEMBER_MANAGE_ROLES,
 } from '../../constants/workspaceMemberRole.js';
 import { WORKSPACE_MEMBER_MESSAGES } from '../../constants/workspaceMemberMessages.js';
-import { USER_POPULATE_FIELDS } from '../workspace/workspace.helpers.js';
+import {
+  USER_POPULATE_FIELDS,
+  findUserMembership,
+} from '../workspace/workspace.helpers.js';
 import { ApiError } from '../../utils/ApiError.js';
-
-const resolveId = (value) => (value?._id ? value._id.toString() : value.toString());
 
 export const populateWorkspaceMember = (query) =>
   query
@@ -17,7 +18,7 @@ export const populateWorkspaceMember = (query) =>
     .populate('workspaceId', 'name slug');
 
 export const findMemberByWorkspaceAndUser = (workspaceId, userId) =>
-  WorkspaceMember.findOne({ workspaceId, userId });
+  findUserMembership(workspaceId, userId);
 
 export const findMemberOrThrow = async (memberId, workspaceId) => {
   const member = await WorkspaceMember.findOne({ _id: memberId, workspaceId });
@@ -49,23 +50,17 @@ export const ensureUserExists = async (userId) => {
   }
 };
 
-export const isWorkspaceOwner = (workspace, userId) =>
-  resolveId(workspace.ownerId) === userId.toString();
+export const isWorkspaceOwner = async (workspace, userId) => {
+  const membership = await findMemberByWorkspaceAndUser(workspace._id, userId);
+  return membership?.role === WORKSPACE_MEMBER_ROLE.OWNER;
+};
 
 export const canViewMembers = async (workspace, userId) => {
-  if (isWorkspaceOwner(workspace, userId)) {
-    return true;
-  }
-
   const membership = await findMemberByWorkspaceAndUser(workspace._id, userId);
   return Boolean(membership);
 };
 
 export const canManageMembers = async (workspace, userId) => {
-  if (isWorkspaceOwner(workspace, userId)) {
-    return true;
-  }
-
   const membership = await findMemberByWorkspaceAndUser(workspace._id, userId);
 
   return (

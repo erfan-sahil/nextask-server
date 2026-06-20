@@ -1,6 +1,7 @@
 import { Workspace } from '../../models/workspace/workspace.model.js';
+import { WorkspaceMember } from '../../models/workspace-member/workspaceMember.model.js';
 import { User } from '../../models/user/user.model.js';
-import { WORKSPACE_VISIBILITY } from '../../constants/workspaceVisibility.js';
+import { WORKSPACE_MEMBER_ROLE } from '../../constants/workspaceMemberRole.js';
 import { WORKSPACE_MESSAGES } from '../../constants/workspaceMessages.js';
 import { ApiError } from '../../utils/ApiError.js';
 
@@ -39,13 +40,40 @@ export const generateUniqueSlug = async (baseSlug, excludeId = null) => {
   }
 };
 
-const resolveOwnerId = (owner) =>
-  owner?._id ? owner._id.toString() : owner.toString();
+export const findUserMembership = (workspaceId, userId) =>
+  WorkspaceMember.findOne({ workspaceId, userId });
 
-export const canAccessWorkspace = (workspace, userId) => {
-  const isOwner = resolveOwnerId(workspace.ownerId) === userId.toString();
+export const getUserWorkspaceMemberships = (userId) =>
+  WorkspaceMember.find({ userId }).select('workspaceId role joinedAt');
 
-  return isOwner || workspace.visibility === WORKSPACE_VISIBILITY.PUBLIC;
+export const ensureWorkspaceAccess = async (workspace, userId) => {
+  const membership = await findUserMembership(workspace._id, userId);
+
+  if (!membership) {
+    throw ApiError.forbidden(WORKSPACE_MESSAGES.ACCESS_DENIED);
+  }
+
+  return membership;
+};
+
+export const ensureWorkspaceOwner = async (workspace, userId) => {
+  const membership = await findUserMembership(workspace._id, userId);
+
+  if (!membership || membership.role !== WORKSPACE_MEMBER_ROLE.OWNER) {
+    throw ApiError.forbidden(WORKSPACE_MESSAGES.OWNER_ONLY_UPDATE);
+  }
+
+  return membership;
+};
+
+export const ensureWorkspaceOwnerForDelete = async (workspace, userId) => {
+  const membership = await findUserMembership(workspace._id, userId);
+
+  if (!membership || membership.role !== WORKSPACE_MEMBER_ROLE.OWNER) {
+    throw ApiError.forbidden(WORKSPACE_MESSAGES.OWNER_ONLY_DELETE);
+  }
+
+  return membership;
 };
 
 export const findWorkspaceOrThrow = async (id) => {
@@ -56,24 +84,6 @@ export const findWorkspaceOrThrow = async (id) => {
   }
 
   return workspace;
-};
-
-export const ensureWorkspaceAccess = (workspace, userId) => {
-  if (!canAccessWorkspace(workspace, userId)) {
-    throw ApiError.forbidden(WORKSPACE_MESSAGES.ACCESS_DENIED);
-  }
-};
-
-export const ensureWorkspaceOwner = (workspace, userId) => {
-  if (resolveOwnerId(workspace.ownerId) !== userId.toString()) {
-    throw ApiError.forbidden(WORKSPACE_MESSAGES.OWNER_ONLY_UPDATE);
-  }
-};
-
-export const ensureWorkspaceOwnerForDelete = (workspace, userId) => {
-  if (resolveOwnerId(workspace.ownerId) !== userId.toString()) {
-    throw ApiError.forbidden(WORKSPACE_MESSAGES.OWNER_ONLY_DELETE);
-  }
 };
 
 export const ensureOwnerExists = async (ownerId) => {

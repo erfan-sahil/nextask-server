@@ -6,7 +6,7 @@ export const WORKSPACE_MESSAGES = {
   DELETED: 'Workspace deleted successfully',
 
   NOT_FOUND: 'Workspace not found',
-  ACCESS_DENIED: 'You do not have access to this workspace',
+  ACCESS_DENIED: 'You are not a member of this workspace',
   OWNER_ONLY_UPDATE: 'Only the workspace owner can update this workspace',
   OWNER_ONLY_DELETE: 'Only the workspace owner can delete this workspace',
   INVALID_SLUG_FROM_NAME:

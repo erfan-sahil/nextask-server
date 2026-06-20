@@ -13,7 +13,29 @@ import {
   ensureWorkspaceOwnerForDelete,
   ensureOwnerExists,
   findPopulatedWorkspaceOrThrow,
+  getUserWorkspaceMemberships,
+  findUserMembership,
 } from './workspace.helpers.js';
+
+const attachMembershipToWorkspaces = (workspaces, memberships) => {
+  const membershipByWorkspaceId = new Map(
+    memberships.map((membership) => [
+      membership.workspaceId.toString(),
+      membership,
+    ])
+  );
+
+  return workspaces.map((workspace) => {
+    const membership = membershipByWorkspaceId.get(workspace._id.toString());
+    const workspaceJson = workspace.toJSON();
+
+    return {
+      ...workspaceJson,
+      membershipRole: membership?.role ?? null,
+      joinedAt: membership?.joinedAt ?? null,
+    };
+  });
+};
 
 export const workspaceService = {
   async create(data, userId) {
@@ -72,11 +94,33 @@ export const workspaceService = {
       session.endSession();
     }
 
-    return findPopulatedWorkspaceOrThrow(workspace._id);
+    const populatedWorkspace = await findPopulatedWorkspaceOrThrow(workspace._id);
+    const ownerMembership = await findUserMembership(workspace._id, ownerId);
+
+    return {
+      ...populatedWorkspace.toJSON(),
+      membershipRole: ownerMembership?.role ?? null,
+      joinedAt: ownerMembership?.joinedAt ?? null,
+    };
   },
 
   async list({ page = 1, limit = 10, status, visibility, search }, userId) {
-    const filter = { ownerId: userId };
+    const memberships = await getUserWorkspaceMemberships(userId);
+
+    if (memberships.length === 0) {
+      return {
+        workspaces: [],
+        pagination: {
+          page,
+          limit,
+          total: 0,
+          totalPages: 1,
+        },
+      };
+    }
+
+    const workspaceIds = memberships.map((membership) => membership.workspaceId);
+    const filter = { _id: { $in: workspaceIds } };
 
     if (status) {
       filter.status = status;
@@ -106,7 +150,7 @@ export const workspaceService = {
     ]);
 
     return {
-      workspaces,
+      workspaces: attachMembershipToWorkspaces(workspaces, memberships),
       pagination: {
         page,
         limit,
@@ -116,12 +160,22 @@ export const workspaceService = {
     };
   },
 
-  async getPopulated(workspaceId) {
-    return findPopulatedWorkspaceOrThrow(workspaceId);
+  async getPopulated(workspaceId, userId) {
+    const workspace = await findPopulatedWorkspaceOrThrow(workspaceId);
+    const memberships = await getUserWorkspaceMemberships(userId);
+    const membership = memberships.find(
+      (item) => item.workspaceId.toString() === workspaceId.toString()
+    );
+
+    return {
+      ...workspace.toJSON(),
+      membershipRole: membership?.role ?? null,
+      joinedAt: membership?.joinedAt ?? null,
+    };
   },
 
   async update(workspace, data, userId) {
-    ensureWorkspaceOwner(workspace, userId);
+    await ensureWorkspaceOwner(workspace, userId);
 
     if (data.name !== undefined) {
       workspace.name = data.name;
@@ -152,11 +206,11 @@ export const workspaceService = {
 
     await workspace.save();
 
-    return findPopulatedWorkspaceOrThrow(workspace._id);
+    return this.getPopulated(workspace._id, userId);
   },
 
   async delete(workspace, userId) {
-    ensureWorkspaceOwnerForDelete(workspace, userId);
+    await ensureWorkspaceOwnerForDelete(workspace, userId);
 
     const session = await mongoose.startSession();
 

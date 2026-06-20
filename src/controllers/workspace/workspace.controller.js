@@ -18,7 +18,10 @@ export const listWorkspaces = asyncHandler(async (req, res) => {
 });
 
 export const getWorkspace = asyncHandler(async (req, res) => {
-  const workspace = await workspaceService.getPopulated(req.workspace._id);
+  const workspace = await workspaceService.getPopulated(
+    req.workspace._id,
+    req.user._id
+  );
 
   res.json(ApiResponse.ok({ workspace }, WORKSPACE_MESSAGES.FETCHED));
 });
