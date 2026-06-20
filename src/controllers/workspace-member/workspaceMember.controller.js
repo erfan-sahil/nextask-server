@@ -1,18 +1,22 @@
 import { workspaceMemberService } from '../../services/workspace-member/workspaceMember.service.js';
+import { workspaceInvitationService } from '../../services/workspace-invitation/workspaceInvitation.service.js';
+import { WORKSPACE_INVITATION_MESSAGES } from '../../constants/workspaceInvitationMessages.js';
 import { WORKSPACE_MEMBER_MESSAGES } from '../../constants/workspaceMemberMessages.js';
 import { ApiResponse } from '../../utils/ApiResponse.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 
-export const createWorkspaceMember = asyncHandler(async (req, res) => {
-  const member = await workspaceMemberService.create(
+export const inviteWorkspaceMember = asyncHandler(async (req, res) => {
+  const result = await workspaceInvitationService.invite(
     req.workspace,
     req.body,
     req.user._id
   );
 
-  res
-    .status(201)
-    .json(ApiResponse.created({ member }, WORKSPACE_MEMBER_MESSAGES.CREATED));
+  const message = result.invitationEmailSent
+    ? WORKSPACE_INVITATION_MESSAGES.SENT
+    : WORKSPACE_INVITATION_MESSAGES.EMAIL_FAILED;
+
+  res.status(201).json(ApiResponse.created(result, message));
 });
 
 export const listWorkspaceMembers = asyncHandler(async (req, res) => {

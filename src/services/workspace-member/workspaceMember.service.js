@@ -8,7 +8,6 @@ import {
   populateWorkspaceMember,
   findMemberByWorkspaceAndUser,
   findPopulatedMemberOrThrow,
-  ensureUserExists,
   ensureCanManageMembers,
   ensureNotOwnerRoleAssignment,
   ensureMemberNotOwner,
@@ -50,34 +49,18 @@ export const workspaceMemberService = {
     await WorkspaceMember.deleteMany({ workspaceId }).session(session);
   },
 
-  async create(workspace, data, actorUserId) {
-    await ensureCanManageMembers(workspace, actorUserId);
-    await ensureUserExists(data.userId);
-
-    if (data.role) {
-      ensureNotOwnerRoleAssignment(data.role);
-    }
-
-    const existingMember = await findMemberByWorkspaceAndUser(
-      workspace._id,
-      data.userId
-    );
-
-    if (existingMember) {
-      throw ApiError.conflict(WORKSPACE_MEMBER_MESSAGES.ALREADY_EXISTS);
-    }
-
+  async addFromInvitation({ workspaceId, userId, role, invitedBy }) {
     const member = await WorkspaceMember.create({
-      workspaceId: workspace._id,
-      userId: data.userId,
-      role: data.role ?? WORKSPACE_MEMBER_ROLE.MEMBER,
-      invitedBy: actorUserId,
+      workspaceId,
+      userId,
+      role,
+      invitedBy,
       joinedAt: new Date(),
     });
 
-    await syncWorkspaceMemberCount(workspace._id);
+    await syncWorkspaceMemberCount(workspaceId);
 
-    return findPopulatedMemberOrThrow(member._id, workspace._id);
+    return findPopulatedMemberOrThrow(member._id, workspaceId);
   },
 
   async list(workspace, { page = 1, limit = 10, role, search }) {

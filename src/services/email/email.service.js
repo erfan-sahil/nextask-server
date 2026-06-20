@@ -4,6 +4,7 @@ import { ApiError } from '../../utils/ApiError.js';
 import { logger } from '../../utils/logger.js';
 import { buildWelcomeEmail } from './templates/welcomeEmail.template.js';
 import { buildVerificationOtpEmail } from './templates/verificationOtp.template.js';
+import { buildWorkspaceInvitationEmail } from './templates/workspaceInvitation.template.js';
 
 let transporter = null;
 
@@ -69,6 +70,28 @@ export const emailService = {
     return this.send({
       to,
       subject: `${otp} is your NexTask verification code`,
+      html,
+      text,
+    });
+  },
+
+  async sendWorkspaceInvitationEmail({
+    to,
+    workspaceName,
+    role,
+    invitedByName,
+    acceptUrl,
+  }) {
+    const { html, text } = buildWorkspaceInvitationEmail({
+      workspaceName,
+      role,
+      invitedByName,
+      acceptUrl,
+    });
+
+    return this.send({
+      to,
+      subject: `You have been invited to join ${workspaceName} on NexTask`,
       html,
       text,
     });

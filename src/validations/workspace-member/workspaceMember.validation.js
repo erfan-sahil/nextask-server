@@ -19,10 +19,14 @@ const assignableMemberRoleSchema = memberRoleSchema.refine(
   WORKSPACE_MEMBER_MESSAGES.OWNER_ROLE_ASSIGN
 );
 
-export const createWorkspaceMemberSchema = z.object({
+export const inviteWorkspaceMemberSchema = z.object({
   params: workspaceIdParamSchema,
   body: z.object({
-    userId: objectIdSchema,
+    email: z
+      .string({ required_error: 'Email is required' })
+      .email('Invalid email address')
+      .trim()
+      .toLowerCase(),
     role: assignableMemberRoleSchema.optional(),
   }),
 });

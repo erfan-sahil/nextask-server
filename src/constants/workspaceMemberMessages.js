@@ -1,5 +1,5 @@
 export const WORKSPACE_MEMBER_MESSAGES = {
-  CREATED: 'Workspace member added successfully',
+  INVITED: 'Workspace invitation sent successfully',
   FETCHED: 'Workspace member fetched successfully',
   LIST_FETCHED: 'Workspace members fetched successfully',
   UPDATED: 'Workspace member updated successfully',

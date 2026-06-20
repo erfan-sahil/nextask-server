@@ -35,6 +35,11 @@
       "key": "memberUserId",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "invitationToken",
+      "value": "",
+      "type": "string"
     }
   ],
   "item": [
@@ -528,23 +533,7 @@
       "name": "Workspace Members",
       "item": [
         {
-          "name": "Add Workspace Member",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (pm.response.code === 201) {",
-                  "    var res = pm.response.json();",
-                  "    if (res.data && res.data.member && res.data.member._id) {",
-                  "        pm.collectionVariables.set('memberId', res.data.member._id);",
-                  "    }",
-                  "}"
-                ]
-              }
-            }
-          ],
+          "name": "Invite Workspace Member",
           "request": {
             "auth": {
               "type": "bearer",
@@ -565,7 +554,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"userId\": \"{{memberUserId}}\",\n  \"role\": \"MEMBER\"\n}",
+              "raw": "{\n  \"email\": \"user@gmail.com\",\n  \"role\": \"MEMBER\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -587,7 +576,7 @@
                 "members"
               ]
             },
-            "description": "Add a user to a workspace. Requires OWNER or ADMIN permission.\n\nRoles: ADMIN | PROJECT_MANAGER | MEMBER (OWNER cannot be assigned here)"
+            "description": "Invite a user by email. Requires OWNER or ADMIN permission.\n\nSends a confirmation email with an accept link.\nRoles: ADMIN | PROJECT_MANAGER | MEMBER"
           },
           "response": []
         },
@@ -779,6 +768,92 @@
               ]
             },
             "description": "Remove a member from the workspace. OWNER/ADMIN can remove others. Members can remove themselves (except OWNER)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Workspace Invitations",
+      "item": [
+        {
+          "name": "Preview Invitation",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/invitations/preview?token={{invitationToken}}",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "invitations",
+                "preview"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "{{invitationToken}}"
+                }
+              ]
+            },
+            "description": "Preview invitation details using the token from the email link. No auth required."
+          },
+          "response": []
+        },
+        {
+          "name": "Accept Invitation",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{invitationToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/invitations/accept",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "invitations",
+                "accept"
+              ]
+            },
+            "description": "Accept a workspace invitation. User must be logged in with the same email that received the invite."
           },
           "response": []
         }

@@ -5,6 +5,7 @@ import { WORKSPACE_STATUS } from '../../constants/workspaceStatus.js';
 import { WORKSPACE_MESSAGES } from '../../constants/workspaceMessages.js';
 import { ApiError } from '../../utils/ApiError.js';
 import { workspaceMemberService } from '../workspace-member/workspaceMember.service.js';
+import { workspaceInvitationService } from '../workspace-invitation/workspaceInvitation.service.js';
 import {
   populateWorkspace,
   slugify,
@@ -218,6 +219,7 @@ export const workspaceService = {
       session.startTransaction();
 
       await workspaceMemberService.deleteByWorkspace(workspace._id, session);
+      await workspaceInvitationService.deleteByWorkspace(workspace._id, session);
       await workspace.deleteOne({ session });
 
       await session.commitTransaction();

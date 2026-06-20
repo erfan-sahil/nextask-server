@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import {
-  createWorkspaceMember,
+  inviteWorkspaceMember,
   listWorkspaceMembers,
   getWorkspaceMember,
   updateWorkspaceMember,
@@ -13,7 +13,7 @@ import {
 } from '../../middlewares/workspace-member/workspaceMember.middleware.js';
 import { validate } from '../../middlewares/common/validate.middleware.js';
 import {
-  createWorkspaceMemberSchema,
+  inviteWorkspaceMemberSchema,
   updateWorkspaceMemberSchema,
   workspaceMemberIdSchema,
   listWorkspaceMembersSchema,
@@ -23,7 +23,7 @@ const router = Router({ mergeParams: true });
 
 router.use(loadWorkspaceByWorkspaceId);
 
-router.post('/', validate(createWorkspaceMemberSchema), createWorkspaceMember);
+router.post('/', validate(inviteWorkspaceMemberSchema), inviteWorkspaceMember);
 
 router.get(
   '/',
