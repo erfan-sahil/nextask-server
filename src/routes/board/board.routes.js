@@ -22,6 +22,7 @@ import {
   boardIdSchema,
   listBoardsSchema,
 } from '../../validations/board/board.validation.js';
+import columnRoutes from '../column/column.routes.js';
 
 const router = Router({ mergeParams: true });
 
@@ -36,6 +37,8 @@ router.post(
 );
 
 router.get('/', validate(listBoardsSchema), requireBoardView, listBoards);
+
+router.use('/:boardId/columns', columnRoutes);
 
 router.get(
   '/:boardId',

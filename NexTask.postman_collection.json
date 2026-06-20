@@ -50,6 +50,11 @@
       "key": "boardId",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "columnId",
+      "value": "",
+      "type": "string"
     }
   ],
   "item": [
@@ -1302,6 +1307,264 @@
               ]
             },
             "description": "Delete a board. Requires DELETE_BOARD (OWNER, ADMIN)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Columns",
+      "item": [
+        {
+          "name": "Create Column",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var res = pm.response.json();",
+                  "    if (res.data && res.data.column && res.data.column._id) {",
+                  "        pm.collectionVariables.set('columnId', res.data.column._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"To Do\",\n  \"position\": 0,\n  \"color\": \"#6366f1\",\n  \"isCompletedColumn\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards/{{boardId}}/columns",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "{{workspaceId}}",
+                "projects",
+                "{{projectId}}",
+                "boards",
+                "{{boardId}}",
+                "columns"
+              ]
+            },
+            "description": "Create a column on a board. Requires CREATE_BOARD (OWNER, ADMIN, PROJECT_MANAGER).\n\nPosition is zero-based. Inserting at an existing position shifts other columns right."
+          },
+          "response": []
+        },
+        {
+          "name": "List Columns",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var res = pm.response.json();",
+                  "    if (res.data && res.data.columns && res.data.columns.length > 0) {",
+                  "        pm.collectionVariables.set('columnId', res.data.columns[0]._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards/{{boardId}}/columns",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "{{workspaceId}}",
+                "projects",
+                "{{projectId}}",
+                "boards",
+                "{{boardId}}",
+                "columns"
+              ]
+            },
+            "description": "List all columns for a board, sorted by position. Requires VIEW_PROJECT permission."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Column by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards/{{boardId}}/columns/{{columnId}}",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "{{workspaceId}}",
+                "projects",
+                "{{projectId}}",
+                "boards",
+                "{{boardId}}",
+                "columns",
+                "{{columnId}}"
+              ]
+            },
+            "description": "Get a single column by ID. Requires VIEW_PROJECT permission."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Column",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"In Progress\",\n  \"position\": 1,\n  \"color\": \"#f59e0b\",\n  \"isCompletedColumn\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards/{{boardId}}/columns/{{columnId}}",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "{{workspaceId}}",
+                "projects",
+                "{{projectId}}",
+                "boards",
+                "{{boardId}}",
+                "columns",
+                "{{columnId}}"
+              ]
+            },
+            "description": "Update column fields. Requires UPDATE_BOARD (OWNER, ADMIN, PROJECT_MANAGER).\n\nUpdatable: name, position, color, isCompletedColumn. Only one completed column is allowed per board."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Column",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards/{{boardId}}/columns/{{columnId}}",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "{{workspaceId}}",
+                "projects",
+                "{{projectId}}",
+                "boards",
+                "{{boardId}}",
+                "columns",
+                "{{columnId}}"
+              ]
+            },
+            "description": "Delete a column. Requires DELETE_BOARD (OWNER, ADMIN). Remaining columns are re-indexed automatically."
           },
           "response": []
         }
