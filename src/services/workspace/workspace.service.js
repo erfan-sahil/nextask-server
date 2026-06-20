@@ -10,12 +10,12 @@ import {
   populateWorkspace,
   slugify,
   generateUniqueSlug,
-  ensureWorkspaceOwner,
-  ensureWorkspaceOwnerForDelete,
-  ensureOwnerExists,
+  assertWorkspaceUpdatePermissions,
   findPopulatedWorkspaceOrThrow,
   getUserWorkspaceMemberships,
   findUserMembership,
+  ensureOwnerExists,
+  ensureWorkspaceOwnerForDelete,
 } from './workspace.helpers.js';
 
 const attachMembershipToWorkspaces = (workspaces, memberships) => {
@@ -176,7 +176,7 @@ export const workspaceService = {
   },
 
   async update(workspace, data, userId) {
-    await ensureWorkspaceOwner(workspace, userId);
+    await assertWorkspaceUpdatePermissions(workspace, userId, data);
 
     if (data.name !== undefined) {
       workspace.name = data.name;

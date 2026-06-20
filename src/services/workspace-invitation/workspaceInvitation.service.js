@@ -16,7 +16,7 @@ import {
 } from '../email/templates/workspaceInvitation.template.js';
 import {
   findMemberByWorkspaceAndUser,
-  ensureCanManageMembers,
+  ensureActorCanInviteMembers,
   ensureNotOwnerRoleAssignment,
 } from '../workspace-member/workspaceMember.helpers.js';
 import { workspaceMemberService } from '../workspace-member/workspaceMember.service.js';
@@ -64,7 +64,7 @@ export const workspaceInvitationService = {
   },
 
   async invite(workspace, { email, role }, actorUserId) {
-    await ensureCanManageMembers(workspace, actorUserId);
+    await ensureActorCanInviteMembers(workspace, actorUserId);
 
     const normalizedEmail = normalizeEmail(email);
 

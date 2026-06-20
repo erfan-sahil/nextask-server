@@ -10,7 +10,7 @@ import { authenticate } from '../../middlewares/auth/auth.middleware.js';
 import {
   loadWorkspace,
   requireWorkspaceAccess,
-  requireWorkspaceOwner,
+  requireWorkspaceUpdate,
   requireWorkspaceOwnerForDelete,
 } from '../../middlewares/workspace/workspace.middleware.js';
 import { validate } from '../../middlewares/common/validate.middleware.js';
@@ -43,7 +43,7 @@ router.patch(
   '/:id',
   validate(updateWorkspaceSchema),
   loadWorkspace,
-  requireWorkspaceOwner,
+  requireWorkspaceUpdate,
   updateWorkspace
 );
 

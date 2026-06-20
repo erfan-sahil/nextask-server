@@ -732,7 +732,7 @@
                 "{{memberId}}"
               ]
             },
-            "description": "Update a member role. Requires OWNER or ADMIN permission."
+            "description": "Update a member role. Requires CHANGE_MEMBER_ROLE (OWNER, ADMIN).\n\nRole hierarchy: OWNER > ADMIN > PROJECT_MANAGER > MEMBER.\nYou can only update members with a lower role than yours. Cannot change your own role or assign OWNER."
           },
           "response": []
         },
@@ -767,7 +767,7 @@
                 "{{memberId}}"
               ]
             },
-            "description": "Remove a member from the workspace. OWNER/ADMIN can remove others. Members can remove themselves (except OWNER)."
+            "description": "Remove a member. Requires REMOVE_MEMBERS to remove others (only lower roles).\n\nAny member except OWNER can leave the workspace themselves."
           },
           "response": []
         }

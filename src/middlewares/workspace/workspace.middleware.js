@@ -2,7 +2,7 @@ import { asyncHandler } from '../../utils/asyncHandler.js';
 import {
   findWorkspaceOrThrow,
   ensureWorkspaceAccess,
-  ensureWorkspaceOwner,
+  ensureCanUpdateWorkspaceAccess,
   ensureWorkspaceOwnerForDelete,
 } from '../../services/workspace/workspace.helpers.js';
 
@@ -16,8 +16,11 @@ export const requireWorkspaceAccess = asyncHandler(async (req, _res, next) => {
   next();
 });
 
-export const requireWorkspaceOwner = asyncHandler(async (req, _res, next) => {
-  req.membership = await ensureWorkspaceOwner(req.workspace, req.user._id);
+export const requireWorkspaceUpdate = asyncHandler(async (req, _res, next) => {
+  req.membership = await ensureCanUpdateWorkspaceAccess(
+    req.workspace,
+    req.user._id
+  );
   next();
 });
 

@@ -1,9 +1,9 @@
 import { asyncHandler } from '../../utils/asyncHandler.js';
 import { findWorkspaceOrThrow } from '../../services/workspace/workspace.helpers.js';
 import {
-  ensureCanViewMembers,
-  ensureCanManageMembers,
+  ensureActorCanViewMembers,
   findMemberOrThrow,
+  findActorMembershipOrThrow,
 } from '../../services/workspace-member/workspaceMember.helpers.js';
 
 export const loadWorkspaceByWorkspaceId = asyncHandler(
@@ -13,16 +13,20 @@ export const loadWorkspaceByWorkspaceId = asyncHandler(
   }
 );
 
+export const loadActorMembership = asyncHandler(async (req, _res, next) => {
+  req.actorMembership = await findActorMembershipOrThrow(
+    req.workspace._id,
+    req.user._id
+  );
+  next();
+});
+
 export const requireWorkspaceMemberView = asyncHandler(
   async (req, _res, next) => {
-    await ensureCanViewMembers(req.workspace, req.user._id);
-    next();
-  }
-);
-
-export const requireWorkspaceMemberManage = asyncHandler(
-  async (req, _res, next) => {
-    await ensureCanManageMembers(req.workspace, req.user._id);
+    req.actorMembership = await ensureActorCanViewMembers(
+      req.workspace,
+      req.user._id
+    );
     next();
   }
 );

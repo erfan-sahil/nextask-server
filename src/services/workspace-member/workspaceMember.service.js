@@ -2,17 +2,17 @@ import { Workspace } from '../../models/workspace/workspace.model.js';
 import { WorkspaceMember } from '../../models/workspace-member/workspaceMember.model.js';
 import { User } from '../../models/user/user.model.js';
 import { WORKSPACE_MEMBER_ROLE } from '../../constants/workspaceMemberRole.js';
+import { canManageTargetRole } from '../../constants/rolePermissions.js';
 import { WORKSPACE_MEMBER_MESSAGES } from '../../constants/workspaceMemberMessages.js';
 import { ApiError } from '../../utils/ApiError.js';
 import {
   populateWorkspaceMember,
-  findMemberByWorkspaceAndUser,
+  findActorMembershipOrThrow,
   findPopulatedMemberOrThrow,
-  ensureCanManageMembers,
+  ensureCanManageTargetMember,
+  ensureCanRemoveTargetMember,
   ensureNotOwnerRoleAssignment,
-  ensureMemberNotOwner,
-  ensureMemberCanBeRemoved,
-  isWorkspaceOwner,
+  ensureNotSelfRoleUpdate,
 } from './workspaceMember.helpers.js';
 
 const syncWorkspaceMemberCount = async (workspaceId, session = null) => {
@@ -111,11 +111,21 @@ export const workspaceMemberService = {
   },
 
   async update(workspace, member, data, actorUserId) {
-    await ensureCanManageMembers(workspace, actorUserId);
-    ensureMemberNotOwner(member);
+    const actorMembership = await findActorMembershipOrThrow(
+      workspace._id,
+      actorUserId
+    );
+
+    ensureNotSelfRoleUpdate(actorMembership, member);
+    ensureCanManageTargetMember(actorMembership, member);
 
     if (data.role !== undefined) {
       ensureNotOwnerRoleAssignment(data.role);
+
+      if (!canManageTargetRole(actorMembership.role, data.role)) {
+        throw ApiError.forbidden(WORKSPACE_MEMBER_MESSAGES.TARGET_MANAGE_DENIED);
+      }
+
       member.role = data.role;
     }
 
@@ -129,6 +139,11 @@ export const workspaceMemberService = {
   },
 
   async remove(workspace, member, actorUserId) {
+    const actorMembership = await findActorMembershipOrThrow(
+      workspace._id,
+      actorUserId
+    );
+
     const isSelf = member.userId.toString() === actorUserId.toString();
 
     if (isSelf) {
@@ -136,21 +151,7 @@ export const workspaceMemberService = {
         throw ApiError.badRequest(WORKSPACE_MEMBER_MESSAGES.SELF_OWNER_LEAVE);
       }
     } else {
-      await ensureCanManageMembers(workspace, actorUserId);
-      ensureMemberCanBeRemoved(member);
-
-      const actorIsOwner = await isWorkspaceOwner(workspace, actorUserId);
-
-      if (!actorIsOwner && member.role === WORKSPACE_MEMBER_ROLE.ADMIN) {
-        const actorMembership = await findMemberByWorkspaceAndUser(
-          workspace._id,
-          actorUserId
-        );
-
-        if (actorMembership?.role === WORKSPACE_MEMBER_ROLE.ADMIN) {
-          throw ApiError.forbidden(WORKSPACE_MEMBER_MESSAGES.MANAGE_DENIED);
-        }
-      }
+      ensureCanRemoveTargetMember(actorMembership, member);
     }
 
     await member.deleteOne();

@@ -7,8 +7,8 @@ export const WORKSPACE_MESSAGES = {
 
   NOT_FOUND: 'Workspace not found',
   ACCESS_DENIED: 'You are not a member of this workspace',
-  OWNER_ONLY_UPDATE: 'Only the workspace owner can update this workspace',
-  OWNER_ONLY_DELETE: 'Only the workspace owner can delete this workspace',
+  OWNER_ONLY_UPDATE: 'You do not have permission to update this workspace',
+  OWNER_ONLY_DELETE: 'You do not have permission to delete this workspace',
   INVALID_SLUG_FROM_NAME:
     'Unable to generate a valid slug from the workspace name',
   INVALID_OWNER: 'The specified workspace owner does not exist',

@@ -1,15 +1,16 @@
 import { WorkspaceMember } from '../../models/workspace-member/workspaceMember.model.js';
 import { User } from '../../models/user/user.model.js';
-import {
-  WORKSPACE_MEMBER_ROLE,
-  WORKSPACE_MEMBER_MANAGE_ROLES,
-} from '../../constants/workspaceMemberRole.js';
 import { WORKSPACE_MEMBER_MESSAGES } from '../../constants/workspaceMemberMessages.js';
 import {
   USER_POPULATE_FIELDS,
   findUserMembership,
 } from '../workspace/workspace.helpers.js';
 import { ApiError } from '../../utils/ApiError.js';
+import {
+  ensureCanViewMembers,
+  ensureCanInviteMembers,
+  ensureCanDeleteWorkspace,
+} from './memberPermission.helpers.js';
 
 export const populateWorkspaceMember = (query) =>
   query
@@ -19,6 +20,16 @@ export const populateWorkspaceMember = (query) =>
 
 export const findMemberByWorkspaceAndUser = (workspaceId, userId) =>
   findUserMembership(workspaceId, userId);
+
+export const findActorMembershipOrThrow = async (workspaceId, userId) => {
+  const membership = await findMemberByWorkspaceAndUser(workspaceId, userId);
+
+  if (!membership) {
+    throw ApiError.forbidden(WORKSPACE_MEMBER_MESSAGES.NOT_A_MEMBER);
+  }
+
+  return membership;
+};
 
 export const findMemberOrThrow = async (memberId, workspaceId) => {
   const member = await WorkspaceMember.findOne({ _id: memberId, workspaceId });
@@ -50,50 +61,38 @@ export const ensureUserExists = async (userId) => {
   }
 };
 
-export const isWorkspaceOwner = async (workspace, userId) => {
-  const membership = await findMemberByWorkspaceAndUser(workspace._id, userId);
-  return membership?.role === WORKSPACE_MEMBER_ROLE.OWNER;
+export const ensureActorCanViewMembers = async (workspace, userId) => {
+  const membership = await findActorMembershipOrThrow(workspace._id, userId);
+  ensureCanViewMembers(membership);
+  return membership;
 };
 
-export const canViewMembers = async (workspace, userId) => {
-  const membership = await findMemberByWorkspaceAndUser(workspace._id, userId);
-  return Boolean(membership);
+export const ensureActorCanInviteMembers = async (workspace, userId) => {
+  const membership = await findActorMembershipOrThrow(workspace._id, userId);
+  ensureCanInviteMembers(membership);
+  return membership;
 };
 
-export const canManageMembers = async (workspace, userId) => {
-  const membership = await findMemberByWorkspaceAndUser(workspace._id, userId);
-
-  return (
-    membership && WORKSPACE_MEMBER_MANAGE_ROLES.includes(membership.role)
-  );
+export const ensureActorCanDeleteWorkspace = async (workspace, userId) => {
+  const membership = await findActorMembershipOrThrow(workspace._id, userId);
+  ensureCanDeleteWorkspace(membership);
+  return membership;
 };
 
-export const ensureCanViewMembers = async (workspace, userId) => {
-  if (!(await canViewMembers(workspace, userId))) {
-    throw ApiError.forbidden(WORKSPACE_MEMBER_MESSAGES.VIEW_DENIED);
-  }
-};
-
-export const ensureCanManageMembers = async (workspace, userId) => {
-  if (!(await canManageMembers(workspace, userId))) {
-    throw ApiError.forbidden(WORKSPACE_MEMBER_MESSAGES.MANAGE_DENIED);
-  }
-};
-
-export const ensureNotOwnerRoleAssignment = (role) => {
-  if (role === WORKSPACE_MEMBER_ROLE.OWNER) {
-    throw ApiError.badRequest(WORKSPACE_MEMBER_MESSAGES.OWNER_ROLE_ASSIGN);
-  }
-};
-
-export const ensureMemberNotOwner = (member) => {
-  if (member.role === WORKSPACE_MEMBER_ROLE.OWNER) {
-    throw ApiError.badRequest(WORKSPACE_MEMBER_MESSAGES.OWNER_ROLE_UPDATE);
-  }
-};
-
-export const ensureMemberCanBeRemoved = (member) => {
-  if (member.role === WORKSPACE_MEMBER_ROLE.OWNER) {
-    throw ApiError.badRequest(WORKSPACE_MEMBER_MESSAGES.OWNER_REMOVE);
-  }
-};
+export {
+  ensureCanViewMembers,
+  ensureCanInviteMembers,
+  ensureCanChangeMemberRole,
+  ensureCanRemoveMembers,
+  ensureCanDeleteWorkspace,
+  ensureCanUpdateWorkspace,
+  ensureCanArchiveWorkspace,
+  ensureCanViewWorkspace,
+  ensureCanManageTargetMember,
+  ensureCanRemoveTargetMember,
+  ensureNotOwnerRoleAssignment,
+  ensureMemberNotOwner,
+  ensureMemberCanBeRemoved,
+  ensureNotSelfRoleUpdate,
+  ensureHasPermission,
+} from './memberPermission.helpers.js';

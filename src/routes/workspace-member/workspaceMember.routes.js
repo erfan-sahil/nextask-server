@@ -10,6 +10,7 @@ import {
   loadWorkspaceByWorkspaceId,
   requireWorkspaceMemberView,
   loadWorkspaceMember,
+  loadActorMembership,
 } from '../../middlewares/workspace-member/workspaceMember.middleware.js';
 import { validate } from '../../middlewares/common/validate.middleware.js';
 import {
@@ -42,6 +43,7 @@ router.get(
 router.patch(
   '/:memberId',
   validate(updateWorkspaceMemberSchema),
+  loadActorMembership,
   loadWorkspaceMember,
   updateWorkspaceMember
 );
@@ -49,6 +51,7 @@ router.patch(
 router.delete(
   '/:memberId',
   validate(workspaceMemberIdSchema),
+  loadActorMembership,
   loadWorkspaceMember,
   deleteWorkspaceMember
 );
