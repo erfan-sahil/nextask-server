@@ -31,3 +31,12 @@ export const loginSchema = z.object({
     password: z.string().min(1, 'Password is required'),
   }),
 });
+
+export const verifyEmailSchema = z.object({
+  body: z.object({
+    otp: z
+      .string()
+      .trim()
+      .regex(/^\d{6}$/, 'Verification code must be a 6-digit number'),
+  }),
+});

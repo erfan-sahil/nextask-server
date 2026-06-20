@@ -3,14 +3,20 @@ import { ApiResponse } from '../../utils/ApiResponse.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 
 export const register = asyncHandler(async (req, res) => {
-  const { user, tokens } = await authService.register(req.body);
+  const { user, tokens, verificationEmailSent } = await authService.register(
+    req.body
+  );
 
   authService.setTokenCookies(res, tokens);
 
+  const message = verificationEmailSent
+    ? 'Registration successful. Please check your email for the verification code.'
+    : 'Registration successful, but we could not send the verification email. Please use resend verification.';
+
   res.status(201).json(
     ApiResponse.created(
-      { user, accessToken: tokens.accessToken },
-      'Registration successful'
+      { user, accessToken: tokens.accessToken, verificationEmailSent },
+      message
     )
   );
 });
@@ -50,4 +56,28 @@ export const logout = asyncHandler(async (req, res) => {
 
 export const getMe = asyncHandler(async (req, res) => {
   res.json(ApiResponse.ok({ user: req.user }));
+});
+
+export const verifyEmail = asyncHandler(async (req, res) => {
+  const { user, alreadyVerified } = await authService.verifyEmail(
+    req.user._id,
+    req.body.otp
+  );
+
+  const message = alreadyVerified
+    ? 'Email is already verified'
+    : 'Email verified successfully';
+
+  res.json(ApiResponse.ok({ user }, message));
+});
+
+export const resendVerification = asyncHandler(async (req, res) => {
+  const { user } = await authService.resendVerification(req.user._id);
+
+  res.json(
+    ApiResponse.ok(
+      { user },
+      'A new verification code has been sent to your email'
+    )
+  );
 });

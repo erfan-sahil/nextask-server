@@ -3,6 +3,7 @@ import { env } from '../../config/env.js';
 import { ApiError } from '../../utils/ApiError.js';
 import { logger } from '../../utils/logger.js';
 import { buildWelcomeEmail } from './templates/welcomeEmail.template.js';
+import { buildVerificationOtpEmail } from './templates/verificationOtp.template.js';
 
 let transporter = null;
 
@@ -57,6 +58,17 @@ export const emailService = {
     return this.send({
       to,
       subject: 'Welcome to NexTask — your account is ready',
+      html,
+      text,
+    });
+  },
+
+  async sendVerificationOtpEmail(to, firstName, otp) {
+    const { html, text } = buildVerificationOtpEmail(firstName, otp);
+
+    return this.send({
+      to,
+      subject: `${otp} is your NexTask verification code`,
       html,
       text,
     });

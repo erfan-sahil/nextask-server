@@ -42,6 +42,23 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    emailVerificationOtp: {
+      type: String,
+      select: false,
+    },
+    emailVerificationExpires: {
+      type: Date,
+      select: false,
+    },
+    emailVerificationSentAt: {
+      type: Date,
+      select: false,
+    },
+    emailVerificationAttempts: {
+      type: Number,
+      default: 0,
+      select: false,
+    },
     status: {
       type: String,
       enum: Object.values(USER_STATUS),
@@ -62,6 +79,10 @@ const userSchema = new mongoose.Schema(
       transform(_doc, ret) {
         delete ret.password;
         delete ret.refreshToken;
+        delete ret.emailVerificationOtp;
+        delete ret.emailVerificationExpires;
+        delete ret.emailVerificationSentAt;
+        delete ret.emailVerificationAttempts;
         delete ret.__v;
         return ret;
       },
