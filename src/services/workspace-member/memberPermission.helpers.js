@@ -73,6 +73,38 @@ export const ensureCanDeleteBoard = (membership) => {
   ensureHasPermission(membership, WORKSPACE_PERMISSION.DELETE_BOARD);
 };
 
+export const ensureCanCreateTask = (membership) => {
+  ensureHasPermission(membership, WORKSPACE_PERMISSION.CREATE_TASK);
+};
+
+export const ensureCanViewTask = (membership) => {
+  ensureHasPermission(membership, WORKSPACE_PERMISSION.VIEW_TASK);
+};
+
+export const ensureCanUpdateTask = (membership) => {
+  ensureHasPermission(membership, WORKSPACE_PERMISSION.UPDATE_TASK);
+};
+
+export const ensureCanDeleteTask = (membership) => {
+  ensureHasPermission(membership, WORKSPACE_PERMISSION.DELETE_TASK);
+};
+
+export const ensureCanAssignTask = (membership) => {
+  ensureHasPermission(membership, WORKSPACE_PERMISSION.ASSIGN_TASK);
+};
+
+export const ensureCanMoveTask = (membership) => {
+  ensureHasPermission(membership, WORKSPACE_PERMISSION.MOVE_TASK);
+};
+
+export const ensureCanChangeTaskPriority = (membership) => {
+  ensureHasPermission(membership, WORKSPACE_PERMISSION.CHANGE_TASK_PRIORITY);
+};
+
+export const ensureCanChangeTaskStatus = (membership) => {
+  ensureHasPermission(membership, WORKSPACE_PERMISSION.CHANGE_TASK_STATUS);
+};
+
 export const ensureCanManageTargetMember = (actorMembership, targetMember) => {
   ensureCanChangeMemberRole(actorMembership);
 

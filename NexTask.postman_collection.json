@@ -55,6 +55,11 @@
       "key": "columnId",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "taskId",
+      "value": "",
+      "type": "string"
     }
   ],
   "item": [
@@ -1565,6 +1570,297 @@
               ]
             },
             "description": "Delete a column. Requires DELETE_BOARD (OWNER, ADMIN). Remaining columns are re-indexed automatically."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Tasks",
+      "item": [
+        {
+          "name": "Create Task",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var res = pm.response.json();",
+                  "    if (res.data && res.data.task && res.data.task._id) {",
+                  "        pm.collectionVariables.set('taskId', res.data.task._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Design homepage mockup\",\n  \"columnId\": \"{{columnId}}\",\n  \"description\": \"Create initial homepage wireframes and mockups\",\n  \"priority\": \"HIGH\",\n  \"assignees\": [],\n  \"dueDate\": \"2026-07-01T00:00:00.000Z\",\n  \"labels\": [\"design\", \"frontend\"]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards/{{boardId}}/tasks",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "{{workspaceId}}",
+                "projects",
+                "{{projectId}}",
+                "boards",
+                "{{boardId}}",
+                "tasks"
+              ]
+            },
+            "description": "Create a task on a board. Requires CREATE_TASK.\n\ncolumnId must belong to the board. reporterId defaults to the authenticated user.\nPriority: LOW | MEDIUM | HIGH | URGENT"
+          },
+          "response": []
+        },
+        {
+          "name": "List Tasks",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var res = pm.response.json();",
+                  "    if (res.data && res.data.tasks && res.data.tasks.length > 0) {",
+                  "        pm.collectionVariables.set('taskId', res.data.tasks[0]._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards/{{boardId}}/tasks?page=1&limit=20",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "{{workspaceId}}",
+                "projects",
+                "{{projectId}}",
+                "boards",
+                "{{boardId}}",
+                "tasks"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "columnId",
+                  "value": "{{columnId}}",
+                  "disabled": true
+                },
+                {
+                  "key": "priority",
+                  "value": "HIGH",
+                  "description": "LOW | MEDIUM | HIGH | URGENT",
+                  "disabled": true
+                },
+                {
+                  "key": "assignee",
+                  "value": "",
+                  "description": "Filter by assignee user ID",
+                  "disabled": true
+                },
+                {
+                  "key": "search",
+                  "value": "design",
+                  "description": "Search by title or description",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "List tasks on a board. Requires VIEW_TASK permission."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Task by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards/{{boardId}}/tasks/{{taskId}}",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "{{workspaceId}}",
+                "projects",
+                "{{projectId}}",
+                "boards",
+                "{{boardId}}",
+                "tasks",
+                "{{taskId}}"
+              ]
+            },
+            "description": "Get a single task by ID. Requires VIEW_TASK permission."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Task",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Design homepage mockup v2\",\n  \"priority\": \"URGENT\",\n  \"columnId\": \"{{columnId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards/{{boardId}}/tasks/{{taskId}}",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "{{workspaceId}}",
+                "projects",
+                "{{projectId}}",
+                "boards",
+                "{{boardId}}",
+                "tasks",
+                "{{taskId}}"
+              ]
+            },
+            "description": "Update task fields with granular permissions:\n- UPDATE_TASK: title, description, dueDate, labels, reporterId\n- MOVE_TASK: columnId\n- ASSIGN_TASK: assignees\n- CHANGE_TASK_PRIORITY: priority\n- CHANGE_TASK_STATUS: completedAt\n\nMoving to a completed column auto-sets completedAt."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Task",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards/{{boardId}}/tasks/{{taskId}}",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "{{workspaceId}}",
+                "projects",
+                "{{projectId}}",
+                "boards",
+                "{{boardId}}",
+                "tasks",
+                "{{taskId}}"
+              ]
+            },
+            "description": "Delete a task. Requires DELETE_TASK permission."
           },
           "response": []
         }
