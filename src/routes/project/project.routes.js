@@ -21,6 +21,7 @@ import {
   projectIdSchema,
   listProjectsSchema,
 } from '../../validations/project/project.validation.js';
+import boardRoutes from '../board/board.routes.js';
 
 const router = Router({ mergeParams: true });
 
@@ -39,6 +40,8 @@ router.get(
   requireProjectView,
   listProjects
 );
+
+router.use('/:projectId/boards', boardRoutes);
 
 router.get(
   '/:projectId',

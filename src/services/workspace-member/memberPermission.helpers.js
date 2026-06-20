@@ -61,6 +61,18 @@ export const ensureCanDeleteProject = (membership) => {
   ensureHasPermission(membership, WORKSPACE_PERMISSION.DELETE_PROJECT);
 };
 
+export const ensureCanCreateBoard = (membership) => {
+  ensureHasPermission(membership, WORKSPACE_PERMISSION.CREATE_BOARD);
+};
+
+export const ensureCanUpdateBoard = (membership) => {
+  ensureHasPermission(membership, WORKSPACE_PERMISSION.UPDATE_BOARD);
+};
+
+export const ensureCanDeleteBoard = (membership) => {
+  ensureHasPermission(membership, WORKSPACE_PERMISSION.DELETE_BOARD);
+};
+
 export const ensureCanManageTargetMember = (actorMembership, targetMember) => {
   ensureCanChangeMemberRole(actorMembership);
 

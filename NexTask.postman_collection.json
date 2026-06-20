@@ -45,6 +45,11 @@
       "key": "projectId",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "boardId",
+      "value": "",
+      "type": "string"
     }
   ],
   "item": [
@@ -1033,6 +1038,270 @@
               ]
             },
             "description": "Delete a project. Requires DELETE_PROJECT (OWNER, ADMIN)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Boards",
+      "item": [
+        {
+          "name": "Create Board",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var res = pm.response.json();",
+                  "    if (res.data && res.data.board && res.data.board._id) {",
+                  "        pm.collectionVariables.set('boardId', res.data.board._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sprint Board\",\n  \"description\": \"Main kanban board for the project\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "{{workspaceId}}",
+                "projects",
+                "{{projectId}}",
+                "boards"
+              ]
+            },
+            "description": "Create a board inside a project. Requires CREATE_BOARD (OWNER, ADMIN, PROJECT_MANAGER)."
+          },
+          "response": []
+        },
+        {
+          "name": "List Boards",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var res = pm.response.json();",
+                  "    if (res.data && res.data.boards && res.data.boards.length > 0) {",
+                  "        pm.collectionVariables.set('boardId', res.data.boards[0]._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards?page=1&limit=10",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "{{workspaceId}}",
+                "projects",
+                "{{projectId}}",
+                "boards"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": "sprint",
+                  "description": "Search by name or description",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "List boards in a project. Requires VIEW_PROJECT permission."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Board by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards/{{boardId}}",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "{{workspaceId}}",
+                "projects",
+                "{{projectId}}",
+                "boards",
+                "{{boardId}}"
+              ]
+            },
+            "description": "Get a single board by ID. Requires VIEW_PROJECT permission."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Board",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sprint Board v2\",\n  \"description\": \"Updated board description\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards/{{boardId}}",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "{{workspaceId}}",
+                "projects",
+                "{{projectId}}",
+                "boards",
+                "{{boardId}}"
+              ]
+            },
+            "description": "Update board fields. Requires UPDATE_BOARD (OWNER, ADMIN, PROJECT_MANAGER).\n\nUpdatable: name, description"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Board",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards/{{boardId}}",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "{{workspaceId}}",
+                "projects",
+                "{{projectId}}",
+                "boards",
+                "{{boardId}}"
+              ]
+            },
+            "description": "Delete a board. Requires DELETE_BOARD (OWNER, ADMIN)."
           },
           "response": []
         }
