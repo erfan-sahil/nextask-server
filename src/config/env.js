@@ -17,6 +17,7 @@ export const env = {
   },
 
   clientUrl: process.env.CLIENT_URL || 'http://localhost:3000',
+  emailLogoUrl: process.env.EMAIL_LOGO_URL || process.env.CLIENT_URL || 'http://localhost:3000',
 
   smtp: {
     host: process.env.SMTP_HOST,
