@@ -1,10 +1,16 @@
 import nodemailer from 'nodemailer';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { env } from '../../config/env.js';
 import { ApiError } from '../../utils/ApiError.js';
 import { logger } from '../../utils/logger.js';
+import { EMAIL_LOGO_CID } from './templates/emailLayout.template.js';
 import { buildWelcomeEmail } from './templates/welcomeEmail.template.js';
 import { buildVerificationOtpEmail } from './templates/verificationOtp.template.js';
 import { buildWorkspaceInvitationEmail } from './templates/workspaceInvitation.template.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const EMAIL_LOGO_PATH = path.join(__dirname, '../../assets/email/logo.png');
 
 let transporter = null;
 
@@ -47,6 +53,13 @@ export const emailService = {
         subject,
         html,
         text,
+        attachments: [
+          {
+            filename: 'logo.png',
+            path: EMAIL_LOGO_PATH,
+            cid: EMAIL_LOGO_CID,
+          },
+        ],
       });
     } catch (error) {
       throw toFriendlyEmailError(error);

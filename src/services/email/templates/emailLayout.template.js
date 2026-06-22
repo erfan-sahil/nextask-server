@@ -22,19 +22,15 @@ export const escapeHtml = (value) =>
 
 export const getCurrentYear = () => new Date().getFullYear();
 
-export const getEmailLogoUrl = () => {
-  const base = (env.emailLogoUrl || env.clientUrl).replace(/\/$/, '');
-  return `${base}/email/logo.png`;
-};
+export const EMAIL_LOGO_CID = 'nextask-logo@nextask';
 
 const c = emailColors;
 
 export const buildEmailLogo = () => {
-  const logoUrl = escapeHtml(getEmailLogoUrl());
   const appUrl = escapeHtml(env.clientUrl);
 
   return `<a href="${appUrl}" style="display:inline-block;text-decoration:none;">
-    <img src="${logoUrl}" alt="NexTask" width="160" height="auto" style="display:block;width:160px;max-width:100%;height:auto;border:0;outline:none;" />
+    <img src="cid:${EMAIL_LOGO_CID}" alt="NexTask" width="160" height="auto" style="display:block;width:160px;max-width:100%;height:auto;border:0;outline:none;" />
   </a>`;
 };
 
