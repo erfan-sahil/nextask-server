@@ -1,8 +1,7 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
-import { USER_STATUS } from '../../constants/userStatus.js';
 
-const userSchema = new mongoose.Schema(
+const pendingRegistrationSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
@@ -34,14 +33,6 @@ const userSchema = new mongoose.Schema(
       minlength: 8,
       select: false,
     },
-    avatar: {
-      type: String,
-      default: null,
-    },
-    isEmailVerified: {
-      type: Boolean,
-      default: false,
-    },
     emailVerificationOtp: {
       type: String,
       select: false,
@@ -59,52 +50,31 @@ const userSchema = new mongoose.Schema(
       default: 0,
       select: false,
     },
-    status: {
-      type: String,
-      enum: Object.values(USER_STATUS),
-      default: USER_STATUS.ACTIVE,
-    },
-    lastLoginAt: {
-      type: Date,
-      default: null,
-    },
-    refreshToken: {
-      type: String,
-      select: false,
-    },
   },
   {
     timestamps: true,
-    toJSON: {
-      transform(_doc, ret) {
-        delete ret.password;
-        delete ret.refreshToken;
-        delete ret.emailVerificationOtp;
-        delete ret.emailVerificationExpires;
-        delete ret.emailVerificationSentAt;
-        delete ret.emailVerificationAttempts;
-        delete ret.__v;
-        return ret;
-      },
-    },
   }
 );
 
-userSchema.pre('save', async function hashPassword(next) {
-  if (!this.isModified('password') || this.$locals?.skipPasswordHash) {
-    if (this.$locals?.skipPasswordHash) {
-      delete this.$locals.skipPasswordHash;
-    }
+pendingRegistrationSchema.index(
+  { emailVerificationExpires: 1 },
+  { expireAfterSeconds: 0 }
+);
 
-    return next();
-  }
+pendingRegistrationSchema.pre('save', async function hashPassword(next) {
+  if (!this.isModified('password')) return next();
 
   this.password = await bcrypt.hash(this.password, 12);
   next();
 });
 
-userSchema.methods.comparePassword = async function comparePassword(candidate) {
+pendingRegistrationSchema.methods.comparePassword = async function comparePassword(
+  candidate
+) {
   return bcrypt.compare(candidate, this.password);
 };
 
-export const User = mongoose.model('User', userSchema);
+export const PendingRegistration = mongoose.model(
+  'PendingRegistration',
+  pendingRegistrationSchema
+);

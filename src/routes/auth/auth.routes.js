@@ -16,6 +16,7 @@ import {
   registerSchema,
   loginSchema,
   verifyEmailSchema,
+  resendVerificationSchema,
 } from '../../validations/auth/auth.validation.js';
 
 const router = Router();
@@ -38,14 +39,13 @@ router.get('/me', authenticate, getMe);
 router.post(
   '/verify-email',
   verificationRateLimit,
-  authenticate,
   validate(verifyEmailSchema),
   verifyEmail
 );
 router.post(
   '/resend-verification',
   verificationRateLimit,
-  authenticate,
+  validate(resendVerificationSchema),
   resendVerification
 );
 

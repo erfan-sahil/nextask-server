@@ -6,6 +6,7 @@ import { USER_STATUS } from '../../constants/userStatus.js';
 import { ApiError } from '../../utils/ApiError.js';
 import { logger } from '../../utils/logger.js';
 import { compareOtp, generateOtp, hashOtp } from '../../utils/otp.js';
+import { PendingRegistration } from '../../models/pending-registration/pendingRegistration.model.js';
 import { User } from '../../models/user/user.model.js';
 import { emailService } from '../email/email.service.js';
 
@@ -58,92 +59,143 @@ const persistRefreshToken = async (user, refreshToken) => {
   await user.save({ validateBeforeSave: false });
 };
 
-const assignVerificationOtp = (user) => {
+const assignVerificationOtp = (record) => {
   const otp = generateOtp();
 
-  user.emailVerificationOtp = hashOtp(otp);
-  user.emailVerificationExpires = new Date(
+  record.emailVerificationOtp = hashOtp(otp);
+  record.emailVerificationExpires = new Date(
     Date.now() + EMAIL_VERIFICATION.OTP_EXPIRY_MS
   );
-  user.emailVerificationSentAt = new Date();
-  user.emailVerificationAttempts = 0;
+  record.emailVerificationSentAt = new Date();
+  record.emailVerificationAttempts = 0;
 
   return otp;
 };
 
-const clearVerificationOtp = (user) => {
-  user.emailVerificationOtp = undefined;
-  user.emailVerificationExpires = undefined;
-  user.emailVerificationSentAt = undefined;
-  user.emailVerificationAttempts = 0;
+const assertValidOtp = (record, otp) => {
+  if (
+    !record.emailVerificationOtp ||
+    !record.emailVerificationExpires ||
+    record.emailVerificationExpires < new Date()
+  ) {
+    throw ApiError.badRequest(
+      'Verification code has expired. Please request a new one.'
+    );
+  }
+
+  if (
+    record.emailVerificationAttempts >= EMAIL_VERIFICATION.MAX_VERIFY_ATTEMPTS
+  ) {
+    throw ApiError.tooManyRequests(
+      'Too many invalid attempts. Please request a new verification code.'
+    );
+  }
+
+  if (!compareOtp(otp, record.emailVerificationOtp)) {
+    record.emailVerificationAttempts += 1;
+    return false;
+  }
+
+  return true;
 };
 
-const issueAndSendVerificationOtp = async (user) => {
-  const otp = assignVerificationOtp(user);
-  await user.save({ validateBeforeSave: false });
-  await emailService.sendVerificationOtpEmail(user.email, user.firstName, otp);
+const findPendingRegistrationByEmail = (email) =>
+  PendingRegistration.findOne({ email }).select(
+    '+password +emailVerificationOtp +emailVerificationExpires +emailVerificationAttempts +emailVerificationSentAt'
+  );
+
+const assertRegistrationAvailable = async ({ email, username }) => {
+  const [existingEmail, existingUsername, pendingEmail, pendingUsername] =
+    await Promise.all([
+      User.findOne({ email }),
+      User.findOne({ username }),
+      PendingRegistration.findOne({ email }),
+      PendingRegistration.findOne({ username }),
+    ]);
+
+  if (existingEmail) {
+    throw ApiError.conflict('Email already registered');
+  }
+
+  if (existingUsername) {
+    throw ApiError.conflict('Username already taken');
+  }
+
+  if (pendingUsername && pendingUsername.email !== email) {
+    throw ApiError.conflict('Username already taken');
+  }
+
+  return pendingEmail;
+};
+
+const issueAndSendVerificationOtp = async (pendingRegistration) => {
+  const otp = assignVerificationOtp(pendingRegistration);
+  await pendingRegistration.save({ validateBeforeSave: false });
+  await emailService.sendVerificationOtpEmail(
+    pendingRegistration.email,
+    pendingRegistration.firstName,
+    otp
+  );
 };
 
 export const authService = {
   async register({ firstName, lastName, username, email, password }) {
-    const [existingEmail, existingUsername] = await Promise.all([
-      User.findOne({ email }),
-      User.findOne({ username }),
-    ]);
+    const existingPending = await assertRegistrationAvailable({
+      email,
+      username,
+    });
 
-    if (existingEmail) {
-      throw ApiError.conflict('Email already registered');
+    let pendingRegistration = existingPending;
+
+    if (pendingRegistration) {
+      pendingRegistration.firstName = firstName;
+      pendingRegistration.lastName = lastName;
+      pendingRegistration.username = username;
+      pendingRegistration.password = password;
+    } else {
+      pendingRegistration = new PendingRegistration({
+        firstName,
+        lastName,
+        username,
+        email,
+        password,
+      });
     }
 
-    if (existingUsername) {
-      throw ApiError.conflict('Username already taken');
-    }
+    const otp = assignVerificationOtp(pendingRegistration);
+    await pendingRegistration.save();
 
-    const session = await mongoose.startSession();
-    let user;
+    let verificationEmailSent = true;
 
     try {
-      session.startTransaction();
-
-      [user] = await User.create(
-        [{ firstName, lastName, username, email, password }],
-        { session }
+      await emailService.sendVerificationOtpEmail(
+        pendingRegistration.email,
+        pendingRegistration.firstName,
+        otp
       );
-
-      const otp = assignVerificationOtp(user);
-
-      const tokens = generateTokens(user._id);
-      user.refreshToken = tokens.refreshToken;
-      await user.save({ session, validateBeforeSave: false });
-
-      await session.commitTransaction();
-
-      let verificationEmailSent = true;
-
-      try {
-        await emailService.sendVerificationOtpEmail(
-          user.email,
-          user.firstName,
-          otp
-        );
-      } catch (error) {
-        verificationEmailSent = false;
-        logger.error('Verification email failed after registration', {
-          userId: user._id,
-          cause: error.message,
-        });
-      }
-
-      return { user, tokens, verificationEmailSent };
     } catch (error) {
-      await session.abortTransaction();
+      logger.error('Verification email failed during registration', {
+        email,
+        cause: error.message,
+      });
       throw error;
-    } finally {
-      session.endSession();
     }
+
+    return { email: pendingRegistration.email, verificationEmailSent };
   },
 
   async login({ email, password }) {
+    const pendingRegistration = await findPendingRegistrationByEmail(email);
+
+    if (
+      pendingRegistration &&
+      (await pendingRegistration.comparePassword(password))
+    ) {
+      throw ApiError.forbidden(
+        'Please verify your email before signing in. Check your inbox for the verification code.'
+      );
+    }
+
     const user = await User.findOne({ email }).select('+password +refreshToken');
 
     if (!user || !(await user.comparePassword(password))) {
@@ -161,80 +213,107 @@ export const authService = {
     return { user, tokens };
   },
 
-  async verifyEmail(userId, otp) {
-    const user = await User.findById(userId).select(
-      '+emailVerificationOtp +emailVerificationExpires +emailVerificationAttempts'
-    );
+  async verifyEmail(email, otp) {
+    const normalizedEmail = email.toLowerCase().trim();
+    const existingUser = await User.findOne({ email: normalizedEmail });
 
-    if (!user) {
-      throw ApiError.notFound('User not found');
-    }
+    if (existingUser) {
+      if (existingUser.isEmailVerified) {
+        return { user: existingUser, alreadyVerified: true, tokens: null };
+      }
 
-    assertActiveUser(user);
-
-    if (user.isEmailVerified) {
-      return { user, alreadyVerified: true };
-    }
-
-    if (
-      !user.emailVerificationOtp ||
-      !user.emailVerificationExpires ||
-      user.emailVerificationExpires < new Date()
-    ) {
       throw ApiError.badRequest(
-        'Verification code has expired. Please request a new one.'
+        'This account requires support to complete verification. Please contact support.'
       );
     }
 
-    if (
-      user.emailVerificationAttempts >= EMAIL_VERIFICATION.MAX_VERIFY_ATTEMPTS
-    ) {
-      throw ApiError.tooManyRequests(
-        'Too many invalid attempts. Please request a new verification code.'
+    const pendingRegistration =
+      await findPendingRegistrationByEmail(normalizedEmail);
+
+    if (!pendingRegistration) {
+      throw ApiError.notFound(
+        'No pending registration found for this email. Please sign up again.'
       );
     }
 
-    if (!compareOtp(otp, user.emailVerificationOtp)) {
-      user.emailVerificationAttempts += 1;
-      await user.save({ validateBeforeSave: false });
+    const isValidOtp = assertValidOtp(pendingRegistration, otp);
 
+    if (!isValidOtp) {
+      await pendingRegistration.save({ validateBeforeSave: false });
       throw ApiError.badRequest('Invalid verification code');
     }
 
-    user.isEmailVerified = true;
-    clearVerificationOtp(user);
-    await user.save({ validateBeforeSave: false });
+    const session = await mongoose.startSession();
+    let user;
 
     try {
-      await emailService.sendWelcomeEmail(user.email, user.firstName);
-    } catch (error) {
-      logger.error('Welcome email failed after verification', {
-        userId: user._id,
-        cause: error.message,
-      });
-    }
+      session.startTransaction();
 
-    return { user, alreadyVerified: false };
+      user = new User({
+        firstName: pendingRegistration.firstName,
+        lastName: pendingRegistration.lastName,
+        username: pendingRegistration.username,
+        email: pendingRegistration.email,
+        isEmailVerified: true,
+      });
+      user.password = pendingRegistration.password;
+      user.$locals.skipPasswordHash = true;
+
+      await PendingRegistration.findByIdAndDelete(pendingRegistration._id, {
+        session,
+      });
+
+      const tokens = generateTokens(user._id);
+      user.refreshToken = tokens.refreshToken;
+      await user.save({ session, validateBeforeSave: false });
+
+      await session.commitTransaction();
+
+      try {
+        await emailService.sendWelcomeEmail(user.email, user.firstName);
+      } catch (error) {
+        logger.error('Welcome email failed after verification', {
+          userId: user._id,
+          cause: error.message,
+        });
+      }
+
+      return { user, tokens, alreadyVerified: false };
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
   },
 
-  async resendVerification(userId) {
-    const user = await User.findById(userId).select(
-      '+emailVerificationSentAt +emailVerificationAttempts'
-    );
+  async resendVerification(email) {
+    const normalizedEmail = email.toLowerCase().trim();
+    const existingUser = await User.findOne({ email: normalizedEmail });
 
-    if (!user) {
-      throw ApiError.notFound('User not found');
-    }
-
-    assertActiveUser(user);
-
-    if (user.isEmailVerified) {
+    if (existingUser?.isEmailVerified) {
       throw ApiError.badRequest('Email is already verified');
     }
 
-    if (user.emailVerificationSentAt) {
+    if (existingUser) {
+      throw ApiError.badRequest(
+        'This account requires support to complete verification. Please contact support.'
+      );
+    }
+
+    const pendingRegistration = await PendingRegistration.findOne({
+      email: normalizedEmail,
+    }).select('+emailVerificationSentAt');
+
+    if (!pendingRegistration) {
+      throw ApiError.notFound(
+        'No pending registration found for this email. Please sign up again.'
+      );
+    }
+
+    if (pendingRegistration.emailVerificationSentAt) {
       const cooldownEndsAt =
-        user.emailVerificationSentAt.getTime() +
+        pendingRegistration.emailVerificationSentAt.getTime() +
         EMAIL_VERIFICATION.RESEND_COOLDOWN_MS;
 
       if (Date.now() < cooldownEndsAt) {
@@ -246,9 +325,9 @@ export const authService = {
       }
     }
 
-    await issueAndSendVerificationOtp(user);
+    await issueAndSendVerificationOtp(pendingRegistration);
 
-    return { user };
+    return { email: pendingRegistration.email };
   },
 
   async refresh(refreshToken) {

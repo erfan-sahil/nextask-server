@@ -34,9 +34,16 @@ export const loginSchema = z.object({
 
 export const verifyEmailSchema = z.object({
   body: z.object({
+    email: z.string().email('Invalid email address'),
     otp: z
       .string()
       .trim()
       .regex(/^\d{6}$/, 'Verification code must be a 6-digit number'),
+  }),
+});
+
+export const resendVerificationSchema = z.object({
+  body: z.object({
+    email: z.string().email('Invalid email address'),
   }),
 });
