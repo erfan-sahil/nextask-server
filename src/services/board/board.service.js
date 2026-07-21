@@ -68,7 +68,7 @@ export const boardService = {
           boardId: board._id,
           createdBy: userId,
         })),
-        { session }
+        { session, ordered: true }
       );
 
       await session.commitTransaction();

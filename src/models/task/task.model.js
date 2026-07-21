@@ -27,6 +27,12 @@ const taskSchema = new mongoose.Schema(
       required: [true, 'Column is required'],
       index: true,
     },
+    position: {
+      type: Number,
+      required: true,
+      default: 0,
+      min: 0,
+    },
     title: {
       type: String,
       required: [true, 'Task title is required'],
@@ -96,7 +102,7 @@ const taskSchema = new mongoose.Schema(
   }
 );
 
-taskSchema.index({ boardId: 1, columnId: 1, lastActivityAt: -1, createdAt: -1 });
+taskSchema.index({ boardId: 1, columnId: 1, position: 1 });
 taskSchema.index({ projectId: 1, lastActivityAt: -1 });
 
 export const Task = mongoose.model('Task', taskSchema);

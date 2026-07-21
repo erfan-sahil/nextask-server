@@ -155,8 +155,9 @@ export const assertTaskUpdatePermissions = (membership, data, task) => {
   }
 
   if (
-    data.columnId !== undefined &&
-    data.columnId.toString() !== task.columnId.toString()
+    (data.columnId !== undefined &&
+      data.columnId.toString() !== task.columnId.toString()) ||
+    (data.position !== undefined && data.position !== task.position)
   ) {
     ensureCanMoveTask(membership);
   }

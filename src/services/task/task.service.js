@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { Task } from '../../models/task/task.model.js';
+import { TaskComment } from '../../models/task-comment/taskComment.model.js';
 import { Project } from '../../models/project/project.model.js';
 import { Workspace } from '../../models/workspace/workspace.model.js';
 import { TASK_PRIORITY } from '../../constants/taskPriority.js';
@@ -44,6 +45,75 @@ const touchActivity = async (workspaceId, projectId) => {
   ]);
 };
 
+const moveTaskToPosition = async (task, boardId, data, session) => {
+  const sourceColumnId = task.columnId.toString();
+  const targetColumnId = data.columnId?.toString() ?? sourceColumnId;
+  const isColumnChanging = targetColumnId !== sourceColumnId;
+
+  if (!isColumnChanging && data.position === undefined) {
+    return;
+  }
+
+  const destinationTaskCount = await Task.countDocuments({
+    boardId,
+    columnId: targetColumnId,
+    _id: { $ne: task._id },
+  }).session(session);
+  const targetPosition = Math.min(
+    Math.max(data.position ?? destinationTaskCount, 0),
+    destinationTaskCount
+  );
+  const currentPosition = task.position ?? 0;
+
+  if (!isColumnChanging) {
+    if (targetPosition === currentPosition) {
+      return;
+    }
+
+    await Task.updateMany(
+      targetPosition < currentPosition
+        ? {
+            boardId,
+            columnId: sourceColumnId,
+            _id: { $ne: task._id },
+            position: { $gte: targetPosition, $lt: currentPosition },
+          }
+        : {
+            boardId,
+            columnId: sourceColumnId,
+            _id: { $ne: task._id },
+            position: { $gt: currentPosition, $lte: targetPosition },
+          },
+      { $inc: { position: targetPosition < currentPosition ? 1 : -1 } },
+      { session }
+    );
+  } else {
+    await Promise.all([
+      Task.updateMany(
+        {
+          boardId,
+          columnId: sourceColumnId,
+          position: { $gt: currentPosition },
+        },
+        { $inc: { position: -1 } },
+        { session }
+      ),
+      Task.updateMany(
+        {
+          boardId,
+          columnId: targetColumnId,
+          position: { $gte: targetPosition },
+        },
+        { $inc: { position: 1 } },
+        { session }
+      ),
+    ]);
+  }
+
+  task.columnId = targetColumnId;
+  task.position = targetPosition;
+};
+
 export const taskService = {
   async create(workspace, project, board, data, userId) {
     const column = await ensureColumnBelongsToBoard(data.columnId, board._id);
@@ -64,6 +134,13 @@ export const taskService = {
 
     try {
       session.startTransaction();
+      const lastTask = await Task.findOne({
+        boardId: board._id,
+        columnId: data.columnId,
+      })
+        .sort({ position: -1 })
+        .select('position')
+        .session(session);
 
       [task] = await Task.create(
         [
@@ -72,6 +149,7 @@ export const taskService = {
             projectId: project._id,
             boardId: board._id,
             columnId: data.columnId,
+            position: (lastTask?.position ?? -1) + 1,
             title: data.title,
             description: data.description ?? '',
             priority: data.priority ?? TASK_PRIORITY.MEDIUM,
@@ -131,15 +209,27 @@ export const taskService = {
     const [tasks, total] = await Promise.all([
       populateTask(
         Task.find(filter)
-          .sort({ lastActivityAt: -1, createdAt: -1 })
+          .sort({ position: 1, createdAt: 1 })
           .skip(skip)
           .limit(limit)
       ),
       Task.countDocuments(filter),
     ]);
+    const commentCounts = tasks.length
+      ? await TaskComment.aggregate([
+          { $match: { taskId: { $in: tasks.map((task) => task._id) } } },
+          { $group: { _id: '$taskId', count: { $sum: 1 } } },
+        ])
+      : [];
+    const commentCountByTaskId = new Map(
+      commentCounts.map(({ _id, count }) => [_id.toString(), count]),
+    );
 
     return {
-      tasks,
+      tasks: tasks.map((task) => ({
+        ...task.toObject(),
+        commentCount: commentCountByTaskId.get(task._id.toString()) ?? 0,
+      })),
       pagination: {
         page,
         limit,
@@ -203,8 +293,6 @@ export const taskService = {
     }
 
     if (data.columnId !== undefined) {
-      task.columnId = data.columnId;
-
       if (data.completedAt === undefined) {
         task.completedAt = resolveCompletedAtForColumn(
           targetColumn,
@@ -220,7 +308,20 @@ export const taskService = {
     task.updatedBy = userId;
     task.lastActivityAt = new Date();
 
-    await task.save();
+    const session = await mongoose.startSession();
+
+    try {
+      session.startTransaction();
+      await moveTaskToPosition(task, board._id, data, session);
+      await task.save({ session });
+      await session.commitTransaction();
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+
     await touchActivity(workspace._id, project._id);
 
     return findPopulatedTaskOrThrow(task._id, board._id, workspace._id);
@@ -232,7 +333,17 @@ export const taskService = {
     try {
       session.startTransaction();
 
+      await TaskComment.deleteMany({ taskId: task._id }).session(session);
       await task.deleteOne({ session });
+      await Task.updateMany(
+        {
+          boardId: board._id,
+          columnId: task.columnId,
+          position: { $gt: task.position },
+        },
+        { $inc: { position: -1 } },
+        { session }
+      );
       await syncTaskCounts(workspace._id, project._id, session);
 
       await session.commitTransaction();

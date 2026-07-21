@@ -15,6 +15,9 @@ const boardTaskParamsSchema = z.object({
 const dateSchema = z
   .union([
     z.string().datetime({ message: 'Invalid date format' }),
+    z.string().regex(/^\d{4}-\d{2}-\d{2}$/, {
+      message: 'Invalid date format',
+    }),
     z.date(),
     z.null(),
   ])
@@ -42,6 +45,7 @@ const taskFieldsSchema = {
     message: `Priority must be one of: ${Object.values(TASK_PRIORITY).join(', ')}`,
   }),
   columnId: objectIdSchema,
+  position: z.number().int().min(0).optional(),
   assignees: z.array(objectIdSchema).optional(),
   reporterId: objectIdSchema.optional(),
   dueDate: dateSchema,
@@ -79,6 +83,7 @@ export const updateTaskSchema = z.object({
     .object({
       title: taskFieldsSchema.title.optional(),
       columnId: taskFieldsSchema.columnId.optional(),
+      position: taskFieldsSchema.position,
       description: taskFieldsSchema.description,
       priority: taskFieldsSchema.priority.optional(),
       assignees: taskFieldsSchema.assignees,
