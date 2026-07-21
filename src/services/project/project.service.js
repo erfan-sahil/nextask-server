@@ -1,12 +1,18 @@
 import mongoose from 'mongoose';
 import { Project } from '../../models/project/project.model.js';
+import { ProjectMember } from '../../models/project-member/projectMember.model.js';
+import { Board } from '../../models/board/board.model.js';
+import { Column } from '../../models/column/column.model.js';
+import { Task } from '../../models/task/task.model.js';
+import { TaskComment } from '../../models/task-comment/taskComment.model.js';
 import { Workspace } from '../../models/workspace/workspace.model.js';
 import { PROJECT_STATUS } from '../../constants/projectStatus.js';
+import { projectMemberService } from '../project-member/projectMember.service.js';
+import { projectInvitationService } from '../project-invitation/projectInvitation.service.js';
 import {
   populateProject,
   findPopulatedProjectOrThrow,
   assertValidDateRange,
-  ensureProjectManagersAreMembers,
 } from './project.helpers.js';
 
 const syncWorkspaceProjectCount = async (workspaceId, session = null) => {
@@ -19,16 +25,15 @@ const syncWorkspaceProjectCount = async (workspaceId, session = null) => {
   );
 };
 
+const syncWorkspaceTaskCount = async (workspaceId, session = null) => {
+  const taskCount = await Task.countDocuments({ workspaceId }).session(session);
+
+  await Workspace.findByIdAndUpdate(workspaceId, { taskCount }, { session });
+};
+
 export const projectService = {
   async create(workspace, data, userId) {
     assertValidDateRange(data.startDate, data.endDate);
-
-    if (data.projectManagers?.length) {
-      await ensureProjectManagersAreMembers(
-        workspace._id,
-        data.projectManagers
-      );
-    }
 
     const session = await mongoose.startSession();
     let project;
@@ -46,7 +51,6 @@ export const projectService = {
             status: data.status ?? PROJECT_STATUS.ACTIVE,
             startDate: data.startDate ?? null,
             endDate: data.endDate ?? null,
-            projectManagers: data.projectManagers ?? [],
             taskCount: 0,
             createdBy: userId,
             updatedBy: userId,
@@ -54,6 +58,16 @@ export const projectService = {
           },
         ],
         { session }
+      );
+
+      // The creator becomes the project OWNER.
+      await projectMemberService.createOwnerMember(
+        {
+          projectId: project._id,
+          workspaceId: workspace._id,
+          userId,
+        },
+        session
       );
 
       await syncWorkspaceProjectCount(workspace._id, session);
@@ -69,8 +83,18 @@ export const projectService = {
     return findPopulatedProjectOrThrow(project._id, workspace._id);
   },
 
-  async list(workspace, { page = 1, limit = 10, status, search }) {
+  async list(workspace, { page = 1, limit = 10, status, search }, scope = {}) {
     const filter = { workspaceId: workspace._id };
+
+    // Project-scoped members only see the projects they belong to.
+    if (scope.isWorkspaceMember === false) {
+      const memberships = await ProjectMember.find({
+        workspaceId: workspace._id,
+        userId: scope.userId,
+      }).select('projectId');
+
+      filter._id = { $in: memberships.map((item) => item.projectId) };
+    }
 
     if (status) {
       filter.status = status;
@@ -118,13 +142,6 @@ export const projectService = {
 
     assertValidDateRange(startDate, endDate);
 
-    if (data.projectManagers !== undefined) {
-      await ensureProjectManagersAreMembers(
-        workspace._id,
-        data.projectManagers
-      );
-    }
-
     if (data.name !== undefined) {
       project.name = data.name;
     }
@@ -149,10 +166,6 @@ export const projectService = {
       project.endDate = data.endDate;
     }
 
-    if (data.projectManagers !== undefined) {
-      project.projectManagers = data.projectManagers;
-    }
-
     project.updatedBy = userId;
     project.lastActivityAt = new Date();
 
@@ -171,8 +184,19 @@ export const projectService = {
     try {
       session.startTransaction();
 
+      const boardIds = await Board.distinct('_id', {
+        projectId: project._id,
+      }).session(session);
+
+      await TaskComment.deleteMany({ projectId: project._id }).session(session);
+      await Task.deleteMany({ projectId: project._id }).session(session);
+      await Column.deleteMany({ boardId: { $in: boardIds } }).session(session);
+      await Board.deleteMany({ projectId: project._id }).session(session);
       await project.deleteOne({ session });
+      await projectMemberService.deleteByProject(project._id, session);
+      await projectInvitationService.deleteByProject(project._id, session);
       await syncWorkspaceProjectCount(workspace._id, session);
+      await syncWorkspaceTaskCount(workspace._id, session);
 
       await session.commitTransaction();
     } catch (error) {

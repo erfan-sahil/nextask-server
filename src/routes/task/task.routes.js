@@ -23,6 +23,7 @@ import {
   taskIdSchema,
   listTasksSchema,
 } from '../../validations/task/task.validation.js';
+import taskCommentRoutes from '../task-comment/taskComment.routes.js';
 
 const router = Router({ mergeParams: true });
 
@@ -33,6 +34,8 @@ router.use(loadBoard);
 router.post('/', validate(createTaskSchema), requireTaskCreate, createTask);
 
 router.get('/', validate(listTasksSchema), requireTaskView, listTasks);
+
+router.use('/:taskId/comments', taskCommentRoutes);
 
 router.get(
   '/:taskId',

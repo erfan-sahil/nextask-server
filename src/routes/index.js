@@ -2,6 +2,7 @@ import { Router } from 'express';
 import authRoutes from './auth/auth.routes.js';
 import workspaceRoutes from './workspace/workspace.routes.js';
 import workspaceInvitationRoutes from './workspace-invitation/workspaceInvitation.routes.js';
+import projectInvitationRoutes from './project-invitation/projectInvitation.routes.js';
 
 const router = Router();
 
@@ -11,6 +12,7 @@ router.get('/health', (_req, res) => {
 
 router.use('/auth', authRoutes);
 router.use('/workspaces/invitations', workspaceInvitationRoutes);
+router.use('/projects/invitations', projectInvitationRoutes);
 router.use('/workspaces', workspaceRoutes);
 
 export default router;

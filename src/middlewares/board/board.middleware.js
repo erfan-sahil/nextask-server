@@ -22,6 +22,7 @@ export const loadProjectByProjectId = asyncHandler(async (req, _res, next) => {
 export const requireBoardView = asyncHandler(async (req, _res, next) => {
   req.actorMembership = await ensureActorCanViewBoards(
     req.workspace,
+    req.project._id,
     req.user._id
   );
   next();
@@ -30,6 +31,7 @@ export const requireBoardView = asyncHandler(async (req, _res, next) => {
 export const requireBoardCreate = asyncHandler(async (req, _res, next) => {
   req.actorMembership = await ensureActorCanCreateBoard(
     req.workspace,
+    req.project._id,
     req.user._id
   );
   next();
@@ -38,6 +40,7 @@ export const requireBoardCreate = asyncHandler(async (req, _res, next) => {
 export const requireBoardUpdate = asyncHandler(async (req, _res, next) => {
   req.actorMembership = await ensureActorCanUpdateBoard(
     req.workspace,
+    req.project._id,
     req.user._id
   );
   next();
@@ -46,6 +49,7 @@ export const requireBoardUpdate = asyncHandler(async (req, _res, next) => {
 export const requireBoardDelete = asyncHandler(async (req, _res, next) => {
   req.actorMembership = await ensureActorCanDeleteBoard(
     req.workspace,
+    req.project._id,
     req.user._id
   );
   next();

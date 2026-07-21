@@ -8,7 +8,7 @@ import {
   ensureCanDeleteBoard,
   ensureCanViewProject,
 } from '../workspace-member/memberPermission.helpers.js';
-import { findActorMembershipOrThrow } from '../workspace-member/workspaceMember.helpers.js';
+import { findEffectiveProjectMembershipOrThrow } from '../project-member/projectMember.helpers.js';
 
 export const populateBoard = (query) =>
   query
@@ -47,26 +47,42 @@ export const findPopulatedBoardOrThrow = async (
   return board;
 };
 
-export const ensureActorCanViewBoards = async (workspace, userId) => {
-  const membership = await findActorMembershipOrThrow(workspace._id, userId);
+export const ensureActorCanViewBoards = async (workspace, projectId, userId) => {
+  const membership = await findEffectiveProjectMembershipOrThrow(
+    workspace._id,
+    projectId,
+    userId
+  );
   ensureCanViewProject(membership);
   return membership;
 };
 
-export const ensureActorCanCreateBoard = async (workspace, userId) => {
-  const membership = await findActorMembershipOrThrow(workspace._id, userId);
+export const ensureActorCanCreateBoard = async (workspace, projectId, userId) => {
+  const membership = await findEffectiveProjectMembershipOrThrow(
+    workspace._id,
+    projectId,
+    userId
+  );
   ensureCanCreateBoard(membership);
   return membership;
 };
 
-export const ensureActorCanUpdateBoard = async (workspace, userId) => {
-  const membership = await findActorMembershipOrThrow(workspace._id, userId);
+export const ensureActorCanUpdateBoard = async (workspace, projectId, userId) => {
+  const membership = await findEffectiveProjectMembershipOrThrow(
+    workspace._id,
+    projectId,
+    userId
+  );
   ensureCanUpdateBoard(membership);
   return membership;
 };
 
-export const ensureActorCanDeleteBoard = async (workspace, userId) => {
-  const membership = await findActorMembershipOrThrow(workspace._id, userId);
+export const ensureActorCanDeleteBoard = async (workspace, projectId, userId) => {
+  const membership = await findEffectiveProjectMembershipOrThrow(
+    workspace._id,
+    projectId,
+    userId
+  );
   ensureCanDeleteBoard(membership);
   return membership;
 };

@@ -1,7 +1,10 @@
 import mongoose from 'mongoose';
 import { Column } from '../../models/column/column.model.js';
+import { Task } from '../../models/task/task.model.js';
 import { Project } from '../../models/project/project.model.js';
 import { Workspace } from '../../models/workspace/workspace.model.js';
+import { COLUMN_MESSAGES } from '../../constants/columnMessages.js';
+import { ApiError } from '../../utils/ApiError.js';
 import {
   populateColumn,
   findPopulatedColumnOrThrow,
@@ -122,6 +125,12 @@ export const columnService = {
   },
 
   async delete(board, column) {
+    const hasTasks = await Task.exists({ columnId: column._id });
+
+    if (hasTasks) {
+      throw ApiError.badRequest(COLUMN_MESSAGES.HAS_TASKS);
+    }
+
     const session = await mongoose.startSession();
 
     try {

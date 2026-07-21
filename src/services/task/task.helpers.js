@@ -1,6 +1,7 @@
 import { Task } from '../../models/task/task.model.js';
 import { Column } from '../../models/column/column.model.js';
 import { WorkspaceMember } from '../../models/workspace-member/workspaceMember.model.js';
+import { ProjectMember } from '../../models/project-member/projectMember.model.js';
 import { TASK_MESSAGES } from '../../constants/taskMessages.js';
 import { USER_POPULATE_FIELDS } from '../workspace/workspace.helpers.js';
 import { ApiError } from '../../utils/ApiError.js';
@@ -14,7 +15,31 @@ import {
   ensureCanChangeTaskPriority,
   ensureCanChangeTaskStatus,
 } from '../workspace-member/memberPermission.helpers.js';
-import { findActorMembershipOrThrow } from '../workspace-member/workspaceMember.helpers.js';
+import { findEffectiveProjectMembershipOrThrow } from '../project-member/projectMember.helpers.js';
+
+// Resolves the set of user ids (from the given candidates) that have access to
+// the project, either as workspace members or as project-scoped members.
+const resolveProjectMemberIds = async (workspaceId, projectId, userIds) => {
+  const uniqueIds = [...new Set(userIds.map((id) => id.toString()))];
+
+  const [workspaceMembers, projectMembers] = await Promise.all([
+    WorkspaceMember.find({
+      workspaceId,
+      userId: { $in: uniqueIds },
+    }).select('userId'),
+    ProjectMember.find({
+      projectId,
+      userId: { $in: uniqueIds },
+    }).select('userId'),
+  ]);
+
+  const allowed = new Set([
+    ...workspaceMembers.map((member) => member.userId.toString()),
+    ...projectMembers.map((member) => member.userId.toString()),
+  ]);
+
+  return { uniqueIds, allowed };
+};
 
 export const populateTask = (query) =>
   query
@@ -61,29 +86,36 @@ export const ensureColumnBelongsToBoard = async (columnId, boardId) => {
   return column;
 };
 
-export const ensureAssigneesAreMembers = async (workspaceId, assigneeIds) => {
+export const ensureAssigneesAreMembers = async (
+  workspaceId,
+  projectId,
+  assigneeIds
+) => {
   if (!assigneeIds?.length) {
     return;
   }
 
-  const uniqueIds = [...new Set(assigneeIds.map((id) => id.toString()))];
-  const memberCount = await WorkspaceMember.countDocuments({
+  const { uniqueIds, allowed } = await resolveProjectMemberIds(
     workspaceId,
-    userId: { $in: uniqueIds },
-  });
+    projectId,
+    assigneeIds
+  );
 
-  if (memberCount !== uniqueIds.length) {
+  if (uniqueIds.some((id) => !allowed.has(id))) {
     throw ApiError.badRequest(TASK_MESSAGES.INVALID_ASSIGNEE);
   }
 };
 
-export const ensureReporterIsMember = async (workspaceId, reporterId) => {
-  const membership = await WorkspaceMember.findOne({
-    workspaceId,
-    userId: reporterId,
-  }).select('_id');
+export const ensureReporterIsMember = async (
+  workspaceId,
+  projectId,
+  reporterId
+) => {
+  const { allowed } = await resolveProjectMemberIds(workspaceId, projectId, [
+    reporterId,
+  ]);
 
-  if (!membership) {
+  if (!allowed.has(reporterId.toString())) {
     throw ApiError.badRequest(TASK_MESSAGES.INVALID_REPORTER);
   }
 };
@@ -166,20 +198,35 @@ export const resolveCompletedAtForColumn = (column, existingCompletedAt) => {
   return null;
 };
 
-export const ensureActorCanViewTasks = async (workspace, userId) => {
-  const membership = await findActorMembershipOrThrow(workspace._id, userId);
+export const ensureActorCanViewTasks = async (workspace, projectId, userId) => {
+  const membership = await findEffectiveProjectMembershipOrThrow(
+    workspace._id,
+    projectId,
+    userId
+  );
   ensureCanViewTask(membership);
   return membership;
 };
 
-export const ensureActorCanCreateTask = async (workspace, userId) => {
-  const membership = await findActorMembershipOrThrow(workspace._id, userId);
+export const ensureActorCanCreateTask = async (workspace, projectId, userId) => {
+  const membership = await findEffectiveProjectMembershipOrThrow(
+    workspace._id,
+    projectId,
+    userId
+  );
   ensureCanCreateTask(membership);
   return membership;
 };
 
-export const ensureActorCanDeleteTask = async (workspace, userId) => {
-  const membership = await findActorMembershipOrThrow(workspace._id, userId);
+export const ensureActorCanDeleteTask = async (workspace, projectId, userId) => {
+  const membership = await findEffectiveProjectMembershipOrThrow(
+    workspace._id,
+    projectId,
+    userId
+  );
   ensureCanDeleteTask(membership);
   return membership;
 };
+
+export const findActorProjectMembershipOrThrow = (workspace, projectId, userId) =>
+  findEffectiveProjectMembershipOrThrow(workspace._id, projectId, userId);

@@ -38,12 +38,6 @@ const projectSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
-    projectManagers: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-      },
-    ],
     taskCount: {
       type: Number,
       default: 0,

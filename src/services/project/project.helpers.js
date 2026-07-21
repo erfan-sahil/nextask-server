@@ -1,6 +1,7 @@
 import { Project } from '../../models/project/project.model.js';
-import { WorkspaceMember } from '../../models/workspace-member/workspaceMember.model.js';
+import { ProjectMember } from '../../models/project-member/projectMember.model.js';
 import { PROJECT_MESSAGES } from '../../constants/projectMessages.js';
+import { WORKSPACE_MEMBER_MESSAGES } from '../../constants/workspaceMemberMessages.js';
 import { USER_POPULATE_FIELDS } from '../workspace/workspace.helpers.js';
 import { ApiError } from '../../utils/ApiError.js';
 import {
@@ -9,11 +10,17 @@ import {
   ensureCanUpdateProject,
   ensureCanDeleteProject,
 } from '../workspace-member/memberPermission.helpers.js';
-import { findActorMembershipOrThrow } from '../workspace-member/workspaceMember.helpers.js';
+import {
+  findActorMembershipOrThrow,
+  findMemberByWorkspaceAndUser,
+} from '../workspace-member/workspaceMember.helpers.js';
+import {
+  findEffectiveProjectMembershipOrThrow,
+  resolveEffectiveProjectMembership,
+} from '../project-member/projectMember.helpers.js';
 
 export const populateProject = (query) =>
   query
-    .populate('projectManagers', USER_POPULATE_FIELDS)
     .populate('createdBy', USER_POPULATE_FIELDS)
     .populate('updatedBy', USER_POPULATE_FIELDS)
     .populate('workspaceId', 'name slug');
@@ -46,45 +53,75 @@ export const assertValidDateRange = (startDate, endDate) => {
   }
 };
 
-export const ensureProjectManagersAreMembers = async (
-  workspaceId,
-  projectManagerIds
-) => {
-  if (!projectManagerIds?.length) {
-    return;
-  }
-
-  const uniqueIds = [...new Set(projectManagerIds.map((id) => id.toString()))];
-  const memberCount = await WorkspaceMember.countDocuments({
-    workspaceId,
-    userId: { $in: uniqueIds },
-  });
-
-  if (memberCount !== uniqueIds.length) {
-    throw ApiError.badRequest(PROJECT_MESSAGES.INVALID_PROJECT_MANAGER);
-  }
-};
-
-export const ensureActorCanViewProjects = async (workspace, userId) => {
-  const membership = await findActorMembershipOrThrow(workspace._id, userId);
-  ensureCanViewProject(membership);
-  return membership;
-};
-
+// Creating a project is a workspace-level action, so it requires an actual
+// workspace membership with the CREATE_PROJECT permission.
 export const ensureActorCanCreateProject = async (workspace, userId) => {
   const membership = await findActorMembershipOrThrow(workspace._id, userId);
   ensureCanCreateProject(membership);
   return membership;
 };
 
-export const ensureActorCanUpdateProject = async (workspace, userId) => {
-  const membership = await findActorMembershipOrThrow(workspace._id, userId);
+// Listing projects is allowed for workspace members (they see every project)
+// and for project-scoped members (they see only the projects they belong to).
+export const ensureActorCanListProjects = async (workspace, userId) => {
+  const workspaceMembership = await findMemberByWorkspaceAndUser(
+    workspace._id,
+    userId
+  );
+
+  if (workspaceMembership) {
+    ensureCanViewProject(workspaceMembership);
+    return { isWorkspaceMember: true };
+  }
+
+  const hasProjectAccess = await ProjectMember.exists({
+    workspaceId: workspace._id,
+    userId,
+  });
+
+  if (!hasProjectAccess) {
+    throw ApiError.forbidden(WORKSPACE_MEMBER_MESSAGES.NOT_A_MEMBER);
+  }
+
+  return { isWorkspaceMember: false };
+};
+
+export const ensureActorCanViewProject = async (workspace, projectId, userId) => {
+  const membership = await findEffectiveProjectMembershipOrThrow(
+    workspace._id,
+    projectId,
+    userId
+  );
+  ensureCanViewProject(membership);
+  return membership;
+};
+
+export const ensureActorCanUpdateProject = async (
+  workspace,
+  projectId,
+  userId
+) => {
+  const membership = await findEffectiveProjectMembershipOrThrow(
+    workspace._id,
+    projectId,
+    userId
+  );
   ensureCanUpdateProject(membership);
   return membership;
 };
 
-export const ensureActorCanDeleteProject = async (workspace, userId) => {
-  const membership = await findActorMembershipOrThrow(workspace._id, userId);
+export const ensureActorCanDeleteProject = async (
+  workspace,
+  projectId,
+  userId
+) => {
+  const membership = await findEffectiveProjectMembershipOrThrow(
+    workspace._id,
+    projectId,
+    userId
+  );
   ensureCanDeleteProject(membership);
   return membership;
 };
+
+export { resolveEffectiveProjectMembership };

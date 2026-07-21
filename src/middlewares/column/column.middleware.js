@@ -17,6 +17,7 @@ export { loadWorkspaceByWorkspaceId, loadProjectByProjectId, loadBoard };
 export const requireColumnView = asyncHandler(async (req, _res, next) => {
   req.actorMembership = await ensureActorCanViewColumns(
     req.workspace,
+    req.project._id,
     req.user._id
   );
   next();
@@ -25,6 +26,7 @@ export const requireColumnView = asyncHandler(async (req, _res, next) => {
 export const requireColumnCreate = asyncHandler(async (req, _res, next) => {
   req.actorMembership = await ensureActorCanCreateColumn(
     req.workspace,
+    req.project._id,
     req.user._id
   );
   next();
@@ -33,6 +35,7 @@ export const requireColumnCreate = asyncHandler(async (req, _res, next) => {
 export const requireColumnUpdate = asyncHandler(async (req, _res, next) => {
   req.actorMembership = await ensureActorCanUpdateColumn(
     req.workspace,
+    req.project._id,
     req.user._id
   );
   next();
@@ -41,6 +44,7 @@ export const requireColumnUpdate = asyncHandler(async (req, _res, next) => {
 export const requireColumnDelete = asyncHandler(async (req, _res, next) => {
   req.actorMembership = await ensureActorCanDeleteColumn(
     req.workspace,
+    req.project._id,
     req.user._id
   );
   next();

@@ -8,5 +8,7 @@ export const COLUMN_MESSAGES = {
   NOT_FOUND: 'Column not found',
   COMPLETED_COLUMN_EXISTS:
     'This board already has a completed column. Unset the existing one first.',
+  HAS_TASKS:
+    'Move or delete the tasks in this column before deleting the column',
   UPDATE_FIELDS_REQUIRED: 'At least one field is required to update the column',
 };

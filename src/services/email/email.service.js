@@ -8,6 +8,7 @@ import { EMAIL_LOGO_CID } from './templates/emailLayout.template.js';
 import { buildWelcomeEmail } from './templates/welcomeEmail.template.js';
 import { buildVerificationOtpEmail } from './templates/verificationOtp.template.js';
 import { buildWorkspaceInvitationEmail } from './templates/workspaceInvitation.template.js';
+import { buildProjectInvitationEmail } from './templates/projectInvitation.template.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EMAIL_LOGO_PATH = path.join(__dirname, '../../assets/email/logo.png');
@@ -105,6 +106,30 @@ export const emailService = {
     return this.send({
       to,
       subject: `You have been invited to join ${workspaceName} on NexTask`,
+      html,
+      text,
+    });
+  },
+
+  async sendProjectInvitationEmail({
+    to,
+    projectName,
+    workspaceName,
+    role,
+    invitedByName,
+    acceptUrl,
+  }) {
+    const { html, text } = buildProjectInvitationEmail({
+      projectName,
+      workspaceName,
+      role,
+      invitedByName,
+      acceptUrl,
+    });
+
+    return this.send({
+      to,
+      subject: `You have been invited to join ${projectName} on NexTask`,
       html,
       text,
     });

@@ -1,5 +1,6 @@
 import { Workspace } from '../../models/workspace/workspace.model.js';
 import { WorkspaceMember } from '../../models/workspace-member/workspaceMember.model.js';
+import { ProjectMember } from '../../models/project-member/projectMember.model.js';
 import { User } from '../../models/user/user.model.js';
 import { WORKSPACE_STATUS } from '../../constants/workspaceStatus.js';
 import { WORKSPACE_MESSAGES } from '../../constants/workspaceMessages.js';
@@ -52,16 +53,33 @@ export const findUserMembership = (workspaceId, userId) =>
 export const getUserWorkspaceMemberships = (userId) =>
   WorkspaceMember.find({ userId }).select('workspaceId role joinedAt');
 
+// Workspaces the user can reach only through a project-scoped membership
+// (i.e. they were invited to a specific project, not the whole workspace).
+export const getUserProjectWorkspaceIds = async (userId) => {
+  const workspaceIds = await ProjectMember.distinct('workspaceId', { userId });
+  return workspaceIds;
+};
+
+export const hasProjectAccessInWorkspace = (workspaceId, userId) =>
+  ProjectMember.exists({ workspaceId, userId });
+
 export const ensureWorkspaceAccess = async (workspace, userId) => {
   const membership = await findUserMembership(workspace._id, userId);
 
-  if (!membership) {
+  if (membership) {
+    ensureCanViewWorkspace(membership);
+    return membership;
+  }
+
+  // Project-scoped members can view the workspace shell without being full
+  // workspace members, so they can navigate to the projects they belong to.
+  const projectAccess = await hasProjectAccessInWorkspace(workspace._id, userId);
+
+  if (!projectAccess) {
     throw ApiError.forbidden(WORKSPACE_MESSAGES.ACCESS_DENIED);
   }
 
-  ensureCanViewWorkspace(membership);
-
-  return membership;
+  return { userId, role: null, isProjectScoped: true };
 };
 
 export const ensureCanUpdateWorkspaceAccess = async (workspace, userId) => {

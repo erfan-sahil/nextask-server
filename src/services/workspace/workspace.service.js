@@ -1,5 +1,10 @@
 import mongoose from 'mongoose';
 import { Workspace } from '../../models/workspace/workspace.model.js';
+import { Project } from '../../models/project/project.model.js';
+import { Board } from '../../models/board/board.model.js';
+import { Column } from '../../models/column/column.model.js';
+import { Task } from '../../models/task/task.model.js';
+import { TaskComment } from '../../models/task-comment/taskComment.model.js';
 import { WORKSPACE_VISIBILITY } from '../../constants/workspaceVisibility.js';
 import { WORKSPACE_STATUS } from '../../constants/workspaceStatus.js';
 import { WORKSPACE_MESSAGES } from '../../constants/workspaceMessages.js';
@@ -13,10 +18,13 @@ import {
   assertWorkspaceUpdatePermissions,
   findPopulatedWorkspaceOrThrow,
   getUserWorkspaceMemberships,
+  getUserProjectWorkspaceIds,
   findUserMembership,
   ensureOwnerExists,
   ensureWorkspaceOwnerForDelete,
 } from './workspace.helpers.js';
+import { projectMemberService } from '../project-member/projectMember.service.js';
+import { projectInvitationService } from '../project-invitation/projectInvitation.service.js';
 
 const attachMembershipToWorkspaces = (workspaces, memberships) => {
   const membershipByWorkspaceId = new Map(
@@ -106,9 +114,24 @@ export const workspaceService = {
   },
 
   async list({ page = 1, limit = 10, status, visibility, search }, userId) {
-    const memberships = await getUserWorkspaceMemberships(userId);
+    const [memberships, projectWorkspaceIds] = await Promise.all([
+      getUserWorkspaceMemberships(userId),
+      getUserProjectWorkspaceIds(userId),
+    ]);
 
-    if (memberships.length === 0) {
+    // A user can reach a workspace either as a workspace member or through a
+    // project they were invited to inside that workspace.
+    const workspaceIdSet = new Map();
+
+    memberships.forEach((membership) => {
+      workspaceIdSet.set(membership.workspaceId.toString(), membership.workspaceId);
+    });
+
+    projectWorkspaceIds.forEach((workspaceId) => {
+      workspaceIdSet.set(workspaceId.toString(), workspaceId);
+    });
+
+    if (workspaceIdSet.size === 0) {
       return {
         workspaces: [],
         pagination: {
@@ -120,7 +143,7 @@ export const workspaceService = {
       };
     }
 
-    const workspaceIds = memberships.map((membership) => membership.workspaceId);
+    const workspaceIds = [...workspaceIdSet.values()];
     const filter = { _id: { $in: workspaceIds } };
 
     if (status) {
@@ -220,6 +243,21 @@ export const workspaceService = {
 
       await workspaceMemberService.deleteByWorkspace(workspace._id, session);
       await workspaceInvitationService.deleteByWorkspace(workspace._id, session);
+      await projectMemberService.deleteByWorkspace(workspace._id, session);
+      await projectInvitationService.deleteByWorkspace(workspace._id, session);
+      await TaskComment.deleteMany({ workspaceId: workspace._id }).session(
+        session
+      );
+      await Task.deleteMany({ workspaceId: workspace._id }).session(session);
+      await Column.deleteMany({
+        boardId: {
+          $in: await Board.distinct('_id', {
+            workspaceId: workspace._id,
+          }).session(session),
+        },
+      }).session(session);
+      await Board.deleteMany({ workspaceId: workspace._id }).session(session);
+      await Project.deleteMany({ workspaceId: workspace._id }).session(session);
       await workspace.deleteOne({ session });
 
       await session.commitTransaction();

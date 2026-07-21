@@ -16,7 +16,10 @@ export const createProject = asyncHandler(async (req, res) => {
 });
 
 export const listProjects = asyncHandler(async (req, res) => {
-  const result = await projectService.list(req.workspace, req.query);
+  const result = await projectService.list(req.workspace, req.query, {
+    userId: req.user._id,
+    isWorkspaceMember: req.projectListScope?.isWorkspaceMember ?? true,
+  });
 
   res.json(ApiResponse.ok(result, PROJECT_MESSAGES.LIST_FETCHED));
 });

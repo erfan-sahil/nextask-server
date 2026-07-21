@@ -49,10 +49,14 @@ export const taskService = {
     const column = await ensureColumnBelongsToBoard(data.columnId, board._id);
     const reporterId = data.reporterId ?? userId;
 
-    await ensureReporterIsMember(workspace._id, reporterId);
+    await ensureReporterIsMember(workspace._id, project._id, reporterId);
 
     if (data.assignees?.length) {
-      await ensureAssigneesAreMembers(workspace._id, data.assignees);
+      await ensureAssigneesAreMembers(
+        workspace._id,
+        project._id,
+        data.assignees
+      );
     }
 
     const session = await mongoose.startSession();
@@ -159,11 +163,15 @@ export const taskService = {
     }
 
     if (data.reporterId !== undefined) {
-      await ensureReporterIsMember(workspace._id, data.reporterId);
+      await ensureReporterIsMember(workspace._id, project._id, data.reporterId);
     }
 
     if (data.assignees !== undefined) {
-      await ensureAssigneesAreMembers(workspace._id, data.assignees);
+      await ensureAssigneesAreMembers(
+        workspace._id,
+        project._id,
+        data.assignees
+      );
     }
 
     if (data.title !== undefined) {

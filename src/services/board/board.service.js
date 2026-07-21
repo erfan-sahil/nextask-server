@@ -1,6 +1,11 @@
+import mongoose from 'mongoose';
 import { Board } from '../../models/board/board.model.js';
+import { Column } from '../../models/column/column.model.js';
+import { Task } from '../../models/task/task.model.js';
+import { TaskComment } from '../../models/task-comment/taskComment.model.js';
 import { Project } from '../../models/project/project.model.js';
 import { Workspace } from '../../models/workspace/workspace.model.js';
+import { DEFAULT_BOARD_COLUMNS } from '../../constants/defaultBoardColumns.js';
 import {
   populateBoard,
   findPopulatedBoardOrThrow,
@@ -15,18 +20,64 @@ const touchProjectAndWorkspaceActivity = async (workspaceId, projectId) => {
   ]);
 };
 
+const syncTaskCounts = async (workspaceId, projectId, session) => {
+  const [projectTaskCount, workspaceTaskCount] = await Promise.all([
+    Task.countDocuments({ workspaceId, projectId }).session(session),
+    Task.countDocuments({ workspaceId }).session(session),
+  ]);
+
+  await Promise.all([
+    Project.findByIdAndUpdate(
+      projectId,
+      { taskCount: projectTaskCount },
+      { session }
+    ),
+    Workspace.findByIdAndUpdate(
+      workspaceId,
+      { taskCount: workspaceTaskCount },
+      { session }
+    ),
+  ]);
+};
+
 export const boardService = {
   async create(workspace, project, data, userId) {
-    const [board] = await Board.create([
-      {
-        workspaceId: workspace._id,
-        projectId: project._id,
-        name: data.name,
-        description: data.description ?? '',
-        createdBy: userId,
-        updatedBy: userId,
-      },
-    ]);
+    const session = await mongoose.startSession();
+    let board;
+
+    try {
+      session.startTransaction();
+
+      [board] = await Board.create(
+        [
+          {
+            workspaceId: workspace._id,
+            projectId: project._id,
+            name: data.name,
+            description: data.description ?? '',
+            createdBy: userId,
+            updatedBy: userId,
+          },
+        ],
+        { session }
+      );
+
+      await Column.create(
+        DEFAULT_BOARD_COLUMNS.map((column) => ({
+          ...column,
+          boardId: board._id,
+          createdBy: userId,
+        })),
+        { session }
+      );
+
+      await session.commitTransaction();
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
 
     await touchProjectAndWorkspaceActivity(workspace._id, project._id);
 
@@ -97,7 +148,25 @@ export const boardService = {
   },
 
   async delete(workspace, project, board) {
-    await board.deleteOne();
+    const session = await mongoose.startSession();
+
+    try {
+      session.startTransaction();
+
+      await TaskComment.deleteMany({ boardId: board._id }).session(session);
+      await Task.deleteMany({ boardId: board._id }).session(session);
+      await Column.deleteMany({ boardId: board._id }).session(session);
+      await board.deleteOne({ session });
+      await syncTaskCounts(workspace._id, project._id, session);
+
+      await session.commitTransaction();
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+
     await touchProjectAndWorkspaceActivity(workspace._id, project._id);
   },
 };

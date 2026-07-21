@@ -58,6 +58,46 @@ export const buildEmailDivider = () =>
     </tr>
   </table>`;
 
+export const formatRoleLabel = (role) =>
+  String(role || '')
+    .toLowerCase()
+    .replace(/(^|\s|_)([a-z])/g, (_match, sep, char) => `${sep === '_' ? ' ' : sep}${char.toUpperCase()}`)
+    .trim();
+
+export const buildEmailRoleBadge = (role) =>
+  `<span style="display:inline-block;background-color:${c.primary};color:${c.primaryForeground};font-size:12px;font-weight:600;letter-spacing:0.02em;padding:5px 12px;border-radius:999px;line-height:1;">
+    ${escapeHtml(formatRoleLabel(role))}
+  </span>`;
+
+/**
+ * Highlighted detail card (label / value rows) used to summarise the
+ * workspace or project an invitee is being added to.
+ */
+export const buildEmailDetailCard = (rows) => {
+  const items = rows
+    .map(
+      (row, index) => `<tr>
+      <td style="padding:${index === 0 ? '0' : '12px'} 0 0;font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:${c.accent};width:110px;" valign="top">
+        ${escapeHtml(row.label)}
+      </td>
+      <td style="padding:${index === 0 ? '0' : '12px'} 0 0;font-size:15px;line-height:1.5;color:${c.foreground};" valign="top">
+        ${row.html ?? escapeHtml(row.value)}
+      </td>
+    </tr>`
+    )
+    .join('');
+
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${c.primaryLight};border:1px solid ${c.border};border-radius:12px;">
+    <tr>
+      <td style="padding:24px 24px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+          ${items}
+        </table>
+      </td>
+    </tr>
+  </table>`;
+};
+
 export const buildEmailStepList = (steps) => {
   const items = steps
     .map(

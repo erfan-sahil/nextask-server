@@ -2,9 +2,15 @@ import { env } from '../../../config/env.js';
 import { WORKSPACE_INVITATION } from '../../../constants/workspaceInvitation.js';
 import {
   buildEmailButton,
+  buildEmailDetailCard,
+  buildEmailDivider,
   buildEmailLayout,
   buildEmailMutedText,
+  buildEmailRoleBadge,
+  buildEmailStepList,
+  emailColors,
   escapeHtml,
+  formatRoleLabel,
 } from './emailLayout.template.js';
 
 export const buildWorkspaceInvitationEmail = ({
@@ -14,24 +20,40 @@ export const buildWorkspaceInvitationEmail = ({
   acceptUrl,
 }) => {
   const expiryDays = WORKSPACE_INVITATION.EXPIRY_MS / (24 * 60 * 60 * 1000);
+  const roleLabel = formatRoleLabel(role);
 
   const bodyHtml = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
     <tr>
-      <td style="padding-bottom:28px;">
-        ${buildEmailMutedText(
-          `<strong style="color:#18181b;">${escapeHtml(invitedByName)}</strong> invited you to join <strong style="color:#18181b;">${escapeHtml(workspaceName)}</strong> as ${escapeHtml(role)}.`
-        )}
+      <td style="padding-bottom:24px;">
+        ${buildEmailDetailCard([
+          { label: 'Workspace', value: workspaceName },
+          { label: 'Invited by', value: invitedByName },
+          { label: 'Your role', html: buildEmailRoleBadge(role) },
+        ])}
       </td>
     </tr>
     <tr>
-      <td style="padding-bottom:28px;">
+      <td align="center" style="padding-bottom:28px;">
         ${buildEmailButton(acceptUrl, 'Accept invitation')}
       </td>
     </tr>
     <tr>
       <td>
+        <p style="margin:0 0 16px;font-size:14px;font-weight:600;color:${emailColors.foreground};">
+          How to join
+        </p>
+        ${buildEmailStepList([
+          'Click the "Accept invitation" button above.',
+          'Sign in to NexTask with this email address (or create your account if you are new).',
+          `Start collaborating in ${escapeHtml(workspaceName)} right away.`,
+        ])}
+      </td>
+    </tr>
+    ${buildEmailDivider()}
+    <tr>
+      <td>
         ${buildEmailMutedText(
-          `Sign in with this email address to accept. This invitation expires in ${expiryDays} days.`
+          `This invitation expires in <strong style="color:${emailColors.foreground};font-weight:600;">${expiryDays} days</strong>. If you were not expecting it, you can safely ignore this email.`
         )}
       </td>
     </tr>
@@ -39,20 +61,31 @@ export const buildWorkspaceInvitationEmail = ({
 
   const html = buildEmailLayout({
     pageTitle: `Join ${workspaceName} on NexTask`,
-    title: `Join ${workspaceName}`,
-    description: 'You have been invited to collaborate on NexTask.',
+    preheader: `${invitedByName} invited you to join ${workspaceName} as ${roleLabel}.`,
+    title: `You are invited to ${workspaceName}`,
+    description: `${invitedByName} has invited you to collaborate in the ${workspaceName} workspace on NexTask as ${roleLabel}.`,
     bodyHtml,
-    footerNote: 'If you were not expecting this invitation, you can ignore this email.',
+    footerNote:
+      'You received this email because someone invited you to a NexTask workspace.',
   });
 
-  const text = `Join ${workspaceName} on NexTask
+  const text = `You are invited to ${workspaceName} on NexTask
 
-${invitedByName} invited you to join ${workspaceName} as ${role}.
+${invitedByName} has invited you to collaborate in the ${workspaceName} workspace as ${roleLabel}.
+
+Workspace: ${workspaceName}
+Invited by: ${invitedByName}
+Your role: ${roleLabel}
+
+How to join:
+1. Open the invitation link below.
+2. Sign in to NexTask with this email address (or create your account if you are new).
+3. Start collaborating in ${workspaceName} right away.
 
 Accept the invitation:
 ${acceptUrl}
 
-Sign in with this email address to accept. This invitation expires in ${expiryDays} days.
+This invitation expires in ${expiryDays} days. If you were not expecting it, you can safely ignore this email.
 
 © ${new Date().getFullYear()} NexTask`;
 

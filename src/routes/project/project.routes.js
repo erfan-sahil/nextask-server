@@ -8,6 +8,7 @@ import {
 } from '../../controllers/project/project.controller.js';
 import {
   loadWorkspaceByWorkspaceId,
+  requireProjectList,
   requireProjectView,
   requireProjectCreate,
   requireProjectUpdate,
@@ -22,6 +23,7 @@ import {
   listProjectsSchema,
 } from '../../validations/project/project.validation.js';
 import boardRoutes from '../board/board.routes.js';
+import projectMemberRoutes from '../project-member/projectMember.routes.js';
 
 const router = Router({ mergeParams: true });
 
@@ -34,13 +36,9 @@ router.post(
   createProject
 );
 
-router.get(
-  '/',
-  validate(listProjectsSchema),
-  requireProjectView,
-  listProjects
-);
+router.get('/', validate(listProjectsSchema), requireProjectList, listProjects);
 
+router.use('/:projectId/members', projectMemberRoutes);
 router.use('/:projectId/boards', boardRoutes);
 
 router.get(

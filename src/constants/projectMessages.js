@@ -6,7 +6,6 @@ export const PROJECT_MESSAGES = {
   DELETED: 'Project deleted successfully',
 
   NOT_FOUND: 'Project not found',
-  INVALID_PROJECT_MANAGER: 'One or more project managers are not members of this workspace',
   INVALID_DATE_RANGE: 'End date must be on or after the start date',
   UPDATE_FIELDS_REQUIRED: 'At least one field is required to update the project',
 };

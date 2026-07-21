@@ -105,6 +105,18 @@ export const ensureCanChangeTaskStatus = (membership) => {
   ensureHasPermission(membership, WORKSPACE_PERMISSION.CHANGE_TASK_STATUS);
 };
 
+export const ensureCanCreateComment = (membership) => {
+  ensureHasPermission(membership, WORKSPACE_PERMISSION.CREATE_COMMENT);
+};
+
+export const ensureCanUpdateComment = (membership) => {
+  ensureHasPermission(membership, WORKSPACE_PERMISSION.UPDATE_COMMENT);
+};
+
+export const ensureCanDeleteComment = (membership) => {
+  ensureHasPermission(membership, WORKSPACE_PERMISSION.DELETE_COMMENT);
+};
+
 export const ensureCanManageTargetMember = (actorMembership, targetMember) => {
   ensureCanChangeMemberRole(actorMembership);
 

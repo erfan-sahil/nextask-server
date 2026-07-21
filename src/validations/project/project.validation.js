@@ -47,7 +47,6 @@ const projectFieldsSchema = {
   }),
   startDate: dateSchema,
   endDate: dateSchema,
-  projectManagers: z.array(objectIdSchema).optional(),
 };
 
 export const createProjectSchema = z.object({
@@ -60,7 +59,6 @@ export const createProjectSchema = z.object({
       status: projectFieldsSchema.status.optional(),
       startDate: projectFieldsSchema.startDate,
       endDate: projectFieldsSchema.endDate,
-      projectManagers: projectFieldsSchema.projectManagers,
     })
     .superRefine((data, ctx) => {
       if (data.startDate && data.endDate && data.endDate < data.startDate) {
@@ -85,7 +83,6 @@ export const updateProjectSchema = z.object({
       status: projectFieldsSchema.status.optional(),
       startDate: projectFieldsSchema.startDate,
       endDate: projectFieldsSchema.endDate,
-      projectManagers: projectFieldsSchema.projectManagers,
     })
     .refine((data) => Object.keys(data).length > 0, {
       message: PROJECT_MESSAGES.UPDATE_FIELDS_REQUIRED,

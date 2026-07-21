@@ -47,6 +47,16 @@
       "type": "string"
     },
     {
+      "key": "projectMemberId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "projectInvitationToken",
+      "value": "",
+      "type": "string"
+    },
+    {
       "key": "boardId",
       "value": "",
       "type": "string"
@@ -596,7 +606,7 @@
                 "members"
               ]
             },
-            "description": "Invite a user by email. Requires OWNER or ADMIN permission.\n\nSends a confirmation email with an accept link.\nRoles: ADMIN | PROJECT_MANAGER | MEMBER"
+            "description": "Invite a user by email. Requires INVITE_MEMBERS permission (OWNER, ADMIN).\n\nSends a confirmation email with an accept link.\nAssignable roles: ADMIN | MEMBER (OWNER is reserved for the creator)."
           },
           "response": []
         },
@@ -657,7 +667,7 @@
                 {
                   "key": "role",
                   "value": "MEMBER",
-                  "description": "OWNER | ADMIN | PROJECT_MANAGER | MEMBER",
+                  "description": "OWNER | ADMIN | MEMBER",
                   "disabled": true
                 },
                 {
@@ -729,7 +739,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"role\": \"PROJECT_MANAGER\"\n}",
+              "raw": "{\n  \"role\": \"ADMIN\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -752,7 +762,7 @@
                 "{{memberId}}"
               ]
             },
-            "description": "Update a member role. Requires CHANGE_MEMBER_ROLE (OWNER, ADMIN).\n\nRole hierarchy: OWNER > ADMIN > PROJECT_MANAGER > MEMBER.\nYou can only update members with a lower role than yours. Cannot change your own role or assign OWNER."
+            "description": "Update a member role. Requires CHANGE_MEMBER_ROLE (OWNER, ADMIN).\n\nRole hierarchy: OWNER > ADMIN > MEMBER.\nYou can only update members with a lower role than yours. Cannot change your own role or assign OWNER."
           },
           "response": []
         },
@@ -834,7 +844,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Website Redesign\",\n  \"description\": \"Redesign the company website\",\n  \"status\": \"ACTIVE\",\n  \"startDate\": \"2026-01-01T00:00:00.000Z\",\n  \"endDate\": \"2026-06-30T00:00:00.000Z\",\n  \"projectManagers\": []\n}",
+              "raw": "{\n  \"name\": \"Website Redesign\",\n  \"description\": \"Redesign the company website\",\n  \"status\": \"ACTIVE\",\n  \"startDate\": \"2026-01-01T00:00:00.000Z\",\n  \"endDate\": \"2026-06-30T00:00:00.000Z\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -856,7 +866,7 @@
                 "projects"
               ]
             },
-            "description": "Create a project inside a workspace. Requires CREATE_PROJECT (OWNER, ADMIN, PROJECT_MANAGER).\n\nStatus: PLANNING | ACTIVE | ON_HOLD | COMPLETED"
+            "description": "Create a project inside a workspace. Requires CREATE_PROJECT (OWNER, ADMIN).\n\nThe creator is automatically added as the project OWNER.\nStatus: PLANNING | ACTIVE | ON_HOLD | COMPLETED"
           },
           "response": []
         },
@@ -928,7 +938,7 @@
                 }
               ]
             },
-            "description": "List projects in a workspace. Requires VIEW_PROJECT permission."
+            "description": "List projects in a workspace.\n\nWorkspace members see every project. Project-scoped members (invited to specific projects) see only the projects they belong to."
           },
           "response": []
         },
@@ -963,7 +973,7 @@
                 "{{projectId}}"
               ]
             },
-            "description": "Get a single project by ID. Requires VIEW_PROJECT permission."
+            "description": "Get a single project by ID. Requires VIEW_PROJECT permission via workspace membership or a direct project membership."
           },
           "response": []
         },
@@ -1012,7 +1022,7 @@
                 "{{projectId}}"
               ]
             },
-            "description": "Update project fields. Requires UPDATE_PROJECT (OWNER, ADMIN, PROJECT_MANAGER).\n\nUpdatable: name, description, icon, status, startDate, endDate, projectManagers"
+            "description": "Update project fields. Requires UPDATE_PROJECT (OWNER, ADMIN) — resolved from the effective project role (workspace or project membership).\n\nUpdatable: name, description, icon, status, startDate, endDate"
           },
           "response": []
         },
@@ -1047,7 +1057,261 @@
                 "{{projectId}}"
               ]
             },
-            "description": "Delete a project. Requires DELETE_PROJECT (OWNER, ADMIN)."
+            "description": "Delete a project. Requires DELETE_PROJECT (OWNER, ADMIN) via effective project role. Also removes the project's members and pending invitations."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Project Members",
+      "item": [
+        {
+          "name": "Invite Project Member",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"projectuser@gmail.com\",\n  \"role\": \"MEMBER\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/members",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "{{workspaceId}}",
+                "projects",
+                "{{projectId}}",
+                "members"
+              ]
+            },
+            "description": "Invite a user by email to a single project. Requires INVITE_MEMBERS on the project (OWNER, ADMIN via effective project role).\n\nSends a confirmation email with an accept link. The invitee gets access to ONLY this project (not the whole workspace).\nAssignable roles: ADMIN | MEMBER.\n\nRejected if the user already has access to the project (as a workspace member or an existing project member)."
+          },
+          "response": []
+        },
+        {
+          "name": "List Project Members",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var res = pm.response.json();",
+                  "    if (res.data && res.data.members && res.data.members.length > 0) {",
+                  "        pm.collectionVariables.set('projectMemberId', res.data.members[0]._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/members?page=1&limit=10",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "{{workspaceId}}",
+                "projects",
+                "{{projectId}}",
+                "members"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "role",
+                  "value": "MEMBER",
+                  "description": "OWNER | ADMIN | MEMBER",
+                  "disabled": true
+                },
+                {
+                  "key": "search",
+                  "value": "john",
+                  "description": "Search by user name, username, or email",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "List members of a project. Requires VIEW_MEMBERS (OWNER, ADMIN) via effective project role."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Project Member by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/members/{{projectMemberId}}",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "{{workspaceId}}",
+                "projects",
+                "{{projectId}}",
+                "members",
+                "{{projectMemberId}}"
+              ]
+            },
+            "description": "Get a single project member by member record ID. Requires VIEW_MEMBERS (OWNER, ADMIN)."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Project Member",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"ADMIN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/members/{{projectMemberId}}",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "{{workspaceId}}",
+                "projects",
+                "{{projectId}}",
+                "members",
+                "{{projectMemberId}}"
+              ]
+            },
+            "description": "Update a project member role. Requires CHANGE_MEMBER_ROLE (OWNER, ADMIN).\n\nRole hierarchy: OWNER > ADMIN > MEMBER. You can only manage members with a lower role than yours. Cannot change your own role or assign OWNER."
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Project Member",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/members/{{projectMemberId}}",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "{{workspaceId}}",
+                "projects",
+                "{{projectId}}",
+                "members",
+                "{{projectMemberId}}"
+              ]
+            },
+            "description": "Remove a project member. Requires REMOVE_MEMBERS to remove others (only lower roles).\n\nAny project member except the project OWNER can leave the project themselves."
           },
           "response": []
         }
@@ -1118,7 +1382,7 @@
                 "boards"
               ]
             },
-            "description": "Create a board inside a project. Requires CREATE_BOARD (OWNER, ADMIN, PROJECT_MANAGER)."
+            "description": "Create a board inside a project. Requires CREATE_BOARD (OWNER, ADMIN) via effective project role."
           },
           "response": []
         },
@@ -1274,7 +1538,7 @@
                 "{{boardId}}"
               ]
             },
-            "description": "Update board fields. Requires UPDATE_BOARD (OWNER, ADMIN, PROJECT_MANAGER).\n\nUpdatable: name, description"
+            "description": "Update board fields. Requires UPDATE_BOARD (OWNER, ADMIN) via effective project role.\n\nUpdatable: name, description"
           },
           "response": []
         },
@@ -1384,7 +1648,7 @@
                 "columns"
               ]
             },
-            "description": "Create a column on a board. Requires CREATE_BOARD (OWNER, ADMIN, PROJECT_MANAGER).\n\nPosition is zero-based. Inserting at an existing position shifts other columns right."
+            "description": "Create a column on a board. Requires CREATE_BOARD (OWNER, ADMIN) via effective project role.\n\nPosition is zero-based. Inserting at an existing position shifts other columns right."
           },
           "response": []
         },
@@ -1530,7 +1794,7 @@
                 "{{columnId}}"
               ]
             },
-            "description": "Update column fields. Requires UPDATE_BOARD (OWNER, ADMIN, PROJECT_MANAGER).\n\nUpdatable: name, position, color, isCompletedColumn. Only one completed column is allowed per board."
+            "description": "Update column fields. Requires UPDATE_BOARD (OWNER, ADMIN) via effective project role.\n\nUpdatable: name, position, color, isCompletedColumn. Only one completed column is allowed per board."
           },
           "response": []
         },
@@ -1947,6 +2211,92 @@
               ]
             },
             "description": "Accept a workspace invitation. User must be logged in with the same email that received the invite."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Project Invitations",
+      "item": [
+        {
+          "name": "Preview Project Invitation",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/projects/invitations/preview?token={{projectInvitationToken}}",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "invitations",
+                "preview"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "{{projectInvitationToken}}"
+                }
+              ]
+            },
+            "description": "Preview a project invitation using the token from the email link. Returns the project, workspace, role, and inviter. No auth required."
+          },
+          "response": []
+        },
+        {
+          "name": "Accept Project Invitation",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{projectInvitationToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://{{host}}:{{port}}/api/v1/projects/invitations/accept",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "invitations",
+                "accept"
+              ]
+            },
+            "description": "Accept a project invitation. User must be logged in with the same email that received the invite. Adds the user as a project-scoped member with access to only this project."
           },
           "response": []
         }
