@@ -23,6 +23,7 @@ import {
 import workspaceMemberRoutes from '../workspace-member/workspaceMember.routes.js';
 import projectRoutes from '../project/project.routes.js';
 import goalRoutes from '../goal/goal.routes.js';
+import calendarRoutes from '../calendar/calendar.routes.js';
 
 const router = Router();
 
@@ -34,6 +35,7 @@ router.get('/', validate(listWorkspacesSchema), listWorkspaces);
 router.use('/:workspaceId/members', workspaceMemberRoutes);
 router.use('/:workspaceId/projects', projectRoutes);
 router.use('/:workspaceId/goals', goalRoutes);
+router.use('/:workspaceId/calendar', calendarRoutes);
 
 router.get(
   '/:id',
