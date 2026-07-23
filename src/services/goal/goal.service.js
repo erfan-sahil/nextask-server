@@ -1,6 +1,7 @@
 import { Goal } from '../../models/goal/goal.model.js';
 import { GOAL_PRIORITY } from '../../constants/goalPriority.js';
 import { GOAL_STATUS } from '../../constants/goalStatus.js';
+import { sanitizeRichText } from '../../utils/sanitizeRichText.js';
 import {
   assertValidDateRange,
   findPopulatedGoalOrThrow,
@@ -23,7 +24,7 @@ export const goalService = {
     const goal = await Goal.create({
       workspaceId: workspace._id,
       title: data.title,
-      description: data.description ?? '',
+      details: sanitizeRichText(data.details),
       status,
       startDate: data.startDate ?? null,
       dueDate: data.dueDate ?? null,
@@ -49,6 +50,7 @@ export const goalService = {
     if (search) {
       filter.$or = [
         { title: { $regex: search, $options: 'i' } },
+        { details: { $regex: search, $options: 'i' } },
         { description: { $regex: search, $options: 'i' } },
       ];
     }
@@ -90,8 +92,8 @@ export const goalService = {
       goal.title = data.title;
     }
 
-    if (data.description !== undefined) {
-      goal.description = data.description;
+    if (data.details !== undefined) {
+      goal.details = sanitizeRichText(data.details);
     }
 
     if (data.status !== undefined) {

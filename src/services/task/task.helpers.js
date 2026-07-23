@@ -121,7 +121,7 @@ export const ensureReporterIsMember = async (
 };
 
 export const assertTaskUpdatePermissions = (membership, data, task) => {
-  const generalFields = ['title', 'description', 'dueDate', 'labels', 'reporterId'];
+  const generalFields = ['title', 'details', 'dueDate', 'labels', 'reporterId'];
   const hasGeneralUpdates = generalFields.some((field) => {
     if (data[field] === undefined) {
       return false;

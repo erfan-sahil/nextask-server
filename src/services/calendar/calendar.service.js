@@ -9,6 +9,12 @@ import { ApiError } from '../../utils/ApiError.js';
 const hasFullCalendarAccess = (role) =>
   role === WORKSPACE_MEMBER_ROLE.OWNER || role === WORKSPACE_MEMBER_ROLE.ADMIN;
 
+const getDetailsText = (resource) =>
+  (resource.details || resource.description || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
 const buildTaskEvent = (task) => ({
   id: `task:${task._id}`,
   resourceId: task._id.toString(),
@@ -18,7 +24,7 @@ const buildTaskEvent = (task) => ({
   endsAt: null,
   allDay: true,
   projectId: task.projectId.toString(),
-  description: task.description,
+  description: getDetailsText(task),
 });
 
 const buildGoalEvent = (goal) => ({
@@ -29,7 +35,7 @@ const buildGoalEvent = (goal) => ({
   startsAt: goal.dueDate,
   endsAt: null,
   allDay: true,
-  description: goal.description,
+  description: getDetailsText(goal),
 });
 
 const buildMeetingEvent = (meeting) => ({
@@ -65,12 +71,12 @@ export const calendarService = {
     }
 
     const [tasks, goals, meetings] = await Promise.all([
-      Task.find(taskFilter).select('title description dueDate projectId').lean(),
+      Task.find(taskFilter).select('title details description dueDate projectId').lean(),
       Goal.find({
         workspaceId: workspace._id,
         dueDate: dateRange,
       })
-        .select('title description dueDate')
+        .select('title details description dueDate')
         .lean(),
       Meeting.find(meetingFilter)
         .select('title message startsAt location attendees createdBy')

@@ -36,9 +36,9 @@ const taskFieldsSchema = {
     .min(1, 'Task title is required')
     .max(500, 'Task title cannot exceed 500 characters')
     .trim(),
-  description: z
+  details: z
     .string()
-    .max(10000, 'Description cannot exceed 10000 characters')
+    .max(10000, 'Task details cannot exceed 10000 characters')
     .trim()
     .optional(),
   priority: z.enum(Object.values(TASK_PRIORITY), {
@@ -66,7 +66,7 @@ export const createTaskSchema = z.object({
   body: z.object({
     title: taskFieldsSchema.title,
     columnId: taskFieldsSchema.columnId,
-    description: taskFieldsSchema.description,
+    details: taskFieldsSchema.details,
     priority: taskFieldsSchema.priority.optional(),
     assignees: taskFieldsSchema.assignees,
     reporterId: taskFieldsSchema.reporterId,
@@ -84,7 +84,7 @@ export const updateTaskSchema = z.object({
       title: taskFieldsSchema.title.optional(),
       columnId: taskFieldsSchema.columnId.optional(),
       position: taskFieldsSchema.position,
-      description: taskFieldsSchema.description,
+      details: taskFieldsSchema.details,
       priority: taskFieldsSchema.priority.optional(),
       assignees: taskFieldsSchema.assignees,
       reporterId: taskFieldsSchema.reporterId,

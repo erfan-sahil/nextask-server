@@ -35,9 +35,9 @@ const goalFieldsSchema = {
     .min(1, 'Goal title is required')
     .max(500, 'Goal title cannot exceed 500 characters')
     .trim(),
-  description: z
+  details: z
     .string()
-    .max(10000, 'Description cannot exceed 10000 characters')
+    .max(10000, 'Goal details cannot exceed 10000 characters')
     .trim()
     .optional(),
   status: z.enum(Object.values(GOAL_STATUS), {
@@ -66,7 +66,7 @@ export const createGoalSchema = z.object({
   body: z
     .object({
       title: goalFieldsSchema.title,
-      description: goalFieldsSchema.description,
+      details: goalFieldsSchema.details,
       status: goalFieldsSchema.status.optional(),
       startDate: goalFieldsSchema.startDate,
       dueDate: goalFieldsSchema.dueDate,
@@ -83,7 +83,7 @@ export const updateGoalSchema = z.object({
   body: z
     .object({
       title: goalFieldsSchema.title.optional(),
-      description: goalFieldsSchema.description,
+      details: goalFieldsSchema.details,
       status: goalFieldsSchema.status.optional(),
       startDate: goalFieldsSchema.startDate,
       dueDate: goalFieldsSchema.dueDate,

@@ -4,6 +4,7 @@ import { TaskComment } from '../../models/task-comment/taskComment.model.js';
 import { Project } from '../../models/project/project.model.js';
 import { Workspace } from '../../models/workspace/workspace.model.js';
 import { TASK_PRIORITY } from '../../constants/taskPriority.js';
+import { sanitizeRichText } from '../../utils/sanitizeRichText.js';
 import {
   populateTask,
   findPopulatedTaskOrThrow,
@@ -151,7 +152,7 @@ export const taskService = {
             columnId: data.columnId,
             position: (lastTask?.position ?? -1) + 1,
             title: data.title,
-            description: data.description ?? '',
+            details: sanitizeRichText(data.details),
             priority: data.priority ?? TASK_PRIORITY.MEDIUM,
             assignees: data.assignees ?? [],
             reporterId,
@@ -200,6 +201,7 @@ export const taskService = {
     if (search) {
       filter.$or = [
         { title: { $regex: search, $options: 'i' } },
+        { details: { $regex: search, $options: 'i' } },
         { description: { $regex: search, $options: 'i' } },
       ];
     }
@@ -268,8 +270,8 @@ export const taskService = {
       task.title = data.title;
     }
 
-    if (data.description !== undefined) {
-      task.description = data.description;
+    if (data.details !== undefined) {
+      task.details = sanitizeRichText(data.details);
     }
 
     if (data.priority !== undefined) {

@@ -39,6 +39,13 @@ const taskSchema = new mongoose.Schema(
       trim: true,
       maxlength: 500,
     },
+    details: {
+      type: String,
+      default: '',
+      trim: true,
+      maxlength: 10000,
+    },
+    // Retained solely to read tasks created before the field was renamed.
     description: {
       type: String,
       default: '',
@@ -95,6 +102,10 @@ const taskSchema = new mongoose.Schema(
     timestamps: true,
     toJSON: {
       transform(_doc, ret) {
+        if (!ret.details && ret.description) {
+          ret.details = ret.description;
+        }
+        delete ret.description;
         delete ret.__v;
         return ret;
       },
