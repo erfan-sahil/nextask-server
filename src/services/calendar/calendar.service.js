@@ -18,6 +18,7 @@ const buildTaskEvent = (task) => ({
   endsAt: null,
   allDay: true,
   projectId: task.projectId.toString(),
+  description: task.description,
 });
 
 const buildGoalEvent = (goal) => ({
@@ -28,6 +29,7 @@ const buildGoalEvent = (goal) => ({
   startsAt: goal.dueDate,
   endsAt: null,
   allDay: true,
+  description: goal.description,
 });
 
 const buildMeetingEvent = (meeting) => ({
@@ -36,9 +38,10 @@ const buildMeetingEvent = (meeting) => ({
   type: 'meeting',
   title: meeting.title,
   startsAt: meeting.startsAt,
-  endsAt: meeting.endsAt,
+  endsAt: null,
   allDay: false,
   location: meeting.location,
+  message: meeting.message,
   attendeeIds: meeting.attendees.map((attendeeId) => attendeeId.toString()),
   createdBy: meeting.createdBy.toString(),
 });
@@ -53,8 +56,7 @@ export const calendarService = {
     };
     const meetingFilter = {
       workspaceId: workspace._id,
-      startsAt: { $lt: endDate },
-      endsAt: { $gt: startDate },
+      startsAt: dateRange,
     };
 
     if (!canViewAll) {
@@ -63,15 +65,15 @@ export const calendarService = {
     }
 
     const [tasks, goals, meetings] = await Promise.all([
-      Task.find(taskFilter).select('title dueDate projectId').lean(),
+      Task.find(taskFilter).select('title description dueDate projectId').lean(),
       Goal.find({
         workspaceId: workspace._id,
         dueDate: dateRange,
       })
-        .select('title dueDate')
+        .select('title description dueDate')
         .lean(),
       Meeting.find(meetingFilter)
-        .select('title startsAt endsAt location attendees createdBy')
+        .select('title message startsAt location attendees createdBy')
         .lean(),
     ]);
 
@@ -104,9 +106,8 @@ export const calendarService = {
     const meeting = await Meeting.create({
       workspaceId: workspace._id,
       title: data.title,
-      description: data.description ?? '',
+      message: data.message ?? '',
       startsAt: data.startsAt,
-      endsAt: data.endsAt,
       location: data.location ?? '',
       attendees: attendeeIds,
       createdBy: userId,

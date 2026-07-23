@@ -14,7 +14,7 @@ const meetingSchema = new mongoose.Schema(
       trim: true,
       maxlength: 500,
     },
-    description: {
+    message: {
       type: String,
       default: '',
       trim: true,
@@ -24,10 +24,6 @@ const meetingSchema = new mongoose.Schema(
       type: Date,
       required: [true, 'Meeting start time is required'],
       index: true,
-    },
-    endsAt: {
-      type: Date,
-      required: [true, 'Meeting end time is required'],
     },
     location: {
       type: String,

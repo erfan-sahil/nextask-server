@@ -61,6 +61,10 @@ export const ensureCanDeleteProject = (membership) => {
   ensureHasPermission(membership, WORKSPACE_PERMISSION.DELETE_PROJECT);
 };
 
+export const ensureCanCreateMeeting = (membership) => {
+  ensureHasPermission(membership, WORKSPACE_PERMISSION.CREATE_MEETING);
+};
+
 export const ensureCanCreateBoard = (membership) => {
   ensureHasPermission(membership, WORKSPACE_PERMISSION.CREATE_BOARD);
 };

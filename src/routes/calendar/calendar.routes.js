@@ -6,6 +6,7 @@ import {
 import {
   loadWorkspaceByWorkspaceId,
   requireCalendarAccess,
+  requireMeetingCreate,
 } from '../../middlewares/calendar/calendar.middleware.js';
 import { validate } from '../../middlewares/common/validate.middleware.js';
 import {
@@ -18,6 +19,6 @@ const router = Router({ mergeParams: true });
 router.use(loadWorkspaceByWorkspaceId);
 
 router.get('/', validate(getCalendarSchema), requireCalendarAccess, getCalendarEvents);
-router.post('/meetings', validate(createMeetingSchema), requireCalendarAccess, createMeeting);
+router.post('/meetings', validate(createMeetingSchema), requireMeetingCreate, createMeeting);
 
 export default router;
