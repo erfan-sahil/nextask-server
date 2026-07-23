@@ -7,7 +7,7 @@ import {
 } from '../../services/workspace/workspace.helpers.js';
 
 export const loadWorkspace = asyncHandler(async (req, _res, next) => {
-  req.workspace = await findWorkspaceOrThrow(req.params.id);
+  req.workspace = await findWorkspaceOrThrow(req.params.id ?? req.params.workspaceId);
   next();
 });
 

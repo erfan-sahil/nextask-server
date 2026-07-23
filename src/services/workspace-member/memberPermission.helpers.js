@@ -121,6 +121,14 @@ export const ensureCanDeleteComment = (membership) => {
   ensureHasPermission(membership, WORKSPACE_PERMISSION.DELETE_COMMENT);
 };
 
+export const ensureCanViewChat = (membership) => {
+  ensureHasPermission(membership, WORKSPACE_PERMISSION.VIEW_CHAT);
+};
+
+export const ensureCanSendMessage = (membership) => {
+  ensureHasPermission(membership, WORKSPACE_PERMISSION.SEND_MESSAGE);
+};
+
 export const ensureCanManageTargetMember = (actorMembership, targetMember) => {
   ensureCanChangeMemberRole(actorMembership);
 

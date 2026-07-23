@@ -5,6 +5,8 @@ import { Board } from '../../models/board/board.model.js';
 import { Column } from '../../models/column/column.model.js';
 import { Task } from '../../models/task/task.model.js';
 import { TaskComment } from '../../models/task-comment/taskComment.model.js';
+import { Notification } from '../../models/notification/notification.model.js';
+import { WorkspaceChatMessage } from '../../models/workspace-chat/workspaceChatMessage.model.js';
 import { WORKSPACE_VISIBILITY } from '../../constants/workspaceVisibility.js';
 import { WORKSPACE_STATUS } from '../../constants/workspaceStatus.js';
 import { WORKSPACE_MESSAGES } from '../../constants/workspaceMessages.js';
@@ -245,6 +247,10 @@ export const workspaceService = {
       await workspaceInvitationService.deleteByWorkspace(workspace._id, session);
       await projectMemberService.deleteByWorkspace(workspace._id, session);
       await projectInvitationService.deleteByWorkspace(workspace._id, session);
+      await Notification.deleteMany({ workspaceId: workspace._id }).session(session);
+      await WorkspaceChatMessage.deleteMany({ workspaceId: workspace._id }).session(
+        session
+      );
       await TaskComment.deleteMany({ workspaceId: workspace._id }).session(
         session
       );

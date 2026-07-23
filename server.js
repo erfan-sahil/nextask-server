@@ -1,6 +1,8 @@
 import app from './src/app.js';
+import http from 'http';
 import { env } from './src/config/env.js';
 import { connectDatabase } from './src/config/database.js';
+import { initializeSocketServer } from './src/realtime/socket.js';
 import { logger } from './src/utils/logger.js';
 
 const requiredEnvVars = ['MONGODB_URI', 'JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET'];
@@ -16,7 +18,9 @@ for (const key of requiredEnvVars) {
 const startServer = async () => {
   await connectDatabase();
 
-  const server = app.listen(env.port, () => {
+  const server = http.createServer(app);
+  initializeSocketServer(server);
+  server.listen(env.port, () => {
     const apiUrl = `http://127.0.0.1:${env.port}/api/v1`;
     console.log(`Server running in ${env.nodeEnv} mode on port ${env.port}`);
     console.log(`API base URL: ${apiUrl}`);

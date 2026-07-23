@@ -1,5 +1,7 @@
 import { taskCommentService } from '../../services/task-comment/taskComment.service.js';
 import { TASK_COMMENT_MESSAGES } from '../../constants/taskCommentMessages.js';
+import { NOTIFICATION_TYPE } from '../../models/notification/notification.model.js';
+import { notificationService } from '../../services/notification/notification.service.js';
 import { ApiResponse } from '../../utils/ApiResponse.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 
@@ -13,6 +15,30 @@ export const createTaskComment = asyncHandler(async (req, res) => {
     req.user._id
   );
 
+  const mentionedUserIds = await notificationService.mentionedUserIds(
+    req.workspace._id,
+    comment.content,
+  );
+  await Promise.all([
+    notificationService.createMany({
+      workspaceId: req.workspace._id,
+      recipientIds: req.task.assignees,
+      actorId: req.user._id,
+      type: NOTIFICATION_TYPE.TASK_COMMENT,
+      message: `${req.user.firstName} commented on “${req.task.title}”`,
+      taskId: req.task._id,
+      commentId: comment._id,
+    }),
+    notificationService.createMany({
+      workspaceId: req.workspace._id,
+      recipientIds: mentionedUserIds,
+      actorId: req.user._id,
+      type: NOTIFICATION_TYPE.MENTION,
+      message: `${req.user.firstName} mentioned you in a comment on “${req.task.title}”`,
+      taskId: req.task._id,
+      commentId: comment._id,
+    }),
+  ]);
   res
     .status(201)
     .json(ApiResponse.created({ comment }, TASK_COMMENT_MESSAGES.CREATED));

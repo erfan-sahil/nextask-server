@@ -1,5 +1,7 @@
 import { taskService } from '../../services/task/task.service.js';
 import { TASK_MESSAGES } from '../../constants/taskMessages.js';
+import { NOTIFICATION_TYPE } from '../../models/notification/notification.model.js';
+import { notificationService } from '../../services/notification/notification.service.js';
 import { ApiResponse } from '../../utils/ApiResponse.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 
@@ -12,6 +14,14 @@ export const createTask = asyncHandler(async (req, res) => {
     req.user._id
   );
 
+  await notificationService.createMany({
+    workspaceId: req.workspace._id,
+    recipientIds: task.assignees.map(({ _id }) => _id),
+    actorId: req.user._id,
+    type: NOTIFICATION_TYPE.TASK_ASSIGNED,
+    message: `${req.user.firstName} assigned you to “${task.title}”`,
+    taskId: task._id,
+  });
   res.status(201).json(ApiResponse.created({ task }, TASK_MESSAGES.CREATED));
 });
 
@@ -32,6 +42,7 @@ export const getTask = asyncHandler(async (req, res) => {
 });
 
 export const updateTask = asyncHandler(async (req, res) => {
+  const previousAssigneeIds = req.task.assignees.map((assignee) => assignee.toString());
   const task = await taskService.update(
     req.workspace,
     req.project,
@@ -42,6 +53,28 @@ export const updateTask = asyncHandler(async (req, res) => {
     req.actorMembership
   );
 
+  const assigneeIds = task.assignees.map(({ _id }) => _id);
+  if (req.body.assignees !== undefined) {
+    const newAssigneeIds = assigneeIds.filter(
+      ({ toString }) => !previousAssigneeIds.includes(toString()),
+    );
+    await notificationService.createMany({
+      workspaceId: req.workspace._id,
+      recipientIds: newAssigneeIds,
+      actorId: req.user._id,
+      type: NOTIFICATION_TYPE.TASK_ASSIGNED,
+      message: `${req.user.firstName} assigned you to “${task.title}”`,
+      taskId: task._id,
+    });
+  }
+  await notificationService.createMany({
+    workspaceId: req.workspace._id,
+    recipientIds: assigneeIds,
+    actorId: req.user._id,
+    type: NOTIFICATION_TYPE.TASK_UPDATED,
+    message: `${req.user.firstName} updated “${task.title}”`,
+    taskId: task._id,
+  });
   res.json(ApiResponse.ok({ task }, TASK_MESSAGES.UPDATED));
 });
 
