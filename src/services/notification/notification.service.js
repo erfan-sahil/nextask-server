@@ -47,8 +47,15 @@ export const notificationService = {
     await Notification.updateMany({ recipientId: userId, readAt: null }, { readAt: new Date() });
   },
 
+  async markRead(userId, notificationId) {
+    await Notification.updateOne(
+      { _id: notificationId, recipientId: userId, readAt: null },
+      { readAt: new Date() },
+    );
+  },
+
   async mentionedUserIds(workspaceId, content) {
-    const usernames = [...content.matchAll(/@([a-z0-9_]+)/gi)].map((match) => match[1].toLowerCase());
+    const usernames = [...content.matchAll(/@([a-z0-9_-]+)/gi)].map((match) => match[1].toLowerCase());
     if (!usernames.length) return [];
     const users = await User.find({ username: { $in: [...new Set(usernames)] } }).select('_id');
     const userIds = users.map(({ _id }) => _id);

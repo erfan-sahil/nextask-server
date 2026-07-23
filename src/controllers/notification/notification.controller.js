@@ -11,3 +11,8 @@ export const markAllNotificationsRead = asyncHandler(async (req, res) => {
   await notificationService.markAllRead(req.user._id);
   res.json(ApiResponse.ok(null));
 });
+
+export const markNotificationRead = asyncHandler(async (req, res) => {
+  await notificationService.markRead(req.user._id, req.params.notificationId);
+  res.json(ApiResponse.ok(null));
+});

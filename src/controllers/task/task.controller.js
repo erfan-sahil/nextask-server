@@ -54,9 +54,10 @@ export const updateTask = asyncHandler(async (req, res) => {
   );
 
   const assigneeIds = task.assignees.map(({ _id }) => _id);
+  let newAssigneeIds = [];
   if (req.body.assignees !== undefined) {
-    const newAssigneeIds = assigneeIds.filter(
-      ({ toString }) => !previousAssigneeIds.includes(toString()),
+    newAssigneeIds = assigneeIds.filter(
+      (assigneeId) => !previousAssigneeIds.includes(assigneeId.toString()),
     );
     await notificationService.createMany({
       workspaceId: req.workspace._id,
@@ -67,9 +68,12 @@ export const updateTask = asyncHandler(async (req, res) => {
       taskId: task._id,
     });
   }
+  const newAssigneeIdSet = new Set(newAssigneeIds.map((assigneeId) => assigneeId.toString()));
   await notificationService.createMany({
     workspaceId: req.workspace._id,
-    recipientIds: assigneeIds,
+    recipientIds: assigneeIds.filter(
+      (assigneeId) => !newAssigneeIdSet.has(assigneeId.toString()),
+    ),
     actorId: req.user._id,
     type: NOTIFICATION_TYPE.TASK_UPDATED,
     message: `${req.user.firstName} updated “${task.title}”`,
