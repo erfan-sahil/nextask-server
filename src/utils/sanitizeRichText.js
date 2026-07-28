@@ -15,8 +15,7 @@ const ALLOWED_TAGS = new Set([
   'ul',
 ]);
 
-const isSafeHref = (href) =>
-  /^(https?:|mailto:|#|\/)/i.test(href.trim());
+const isSafeHref = (href) => /^(https?:|mailto:|#|\/)/i.test(href.trim());
 
 export const sanitizeRichText = (content) => {
   if (!content) {

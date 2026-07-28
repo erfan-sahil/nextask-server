@@ -1,10 +1,7 @@
 import { WorkspaceMember } from '../../models/workspace-member/workspaceMember.model.js';
 import { User } from '../../models/user/user.model.js';
 import { WORKSPACE_MEMBER_MESSAGES } from '../../constants/workspaceMemberMessages.js';
-import {
-  USER_POPULATE_FIELDS,
-  findUserMembership,
-} from '../workspace/workspace.helpers.js';
+import { USER_POPULATE_FIELDS, findUserMembership } from '../workspace/workspace.helpers.js';
 import { ApiError } from '../../utils/ApiError.js';
 import {
   ensureCanViewMembers,

@@ -9,9 +9,7 @@ export const buildWelcomeEmail = (firstName) => {
   const bodyHtml = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
     <tr>
       <td style="padding-bottom:28px;">
-        ${buildEmailMutedText(
-          'Your email has been verified and your account is now active.'
-        )}
+        ${buildEmailMutedText('Your email has been verified and your account is now active.')}
       </td>
     </tr>
     <tr>

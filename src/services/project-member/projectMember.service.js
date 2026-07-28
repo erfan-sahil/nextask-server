@@ -77,10 +77,7 @@ export const projectMemberService = {
 
     const [members, total] = await Promise.all([
       populateProjectMember(
-        ProjectMember.find(filter)
-          .sort({ joinedAt: -1 })
-          .skip(skip)
-          .limit(limit)
+        ProjectMember.find(filter).sort({ joinedAt: -1 }).skip(skip).limit(limit)
       ),
       ProjectMember.countDocuments(filter),
     ]);

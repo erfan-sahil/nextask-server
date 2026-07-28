@@ -67,8 +67,7 @@ export const buildProjectInvitationEmail = ({
     title: `You are invited to ${projectName}`,
     description: `${invitedByName} has invited you to collaborate on the ${projectName} project in the ${workspaceName} workspace on NexTask as ${roleLabel}.`,
     bodyHtml,
-    footerNote:
-      'You received this email because someone invited you to a NexTask project.',
+    footerNote: 'You received this email because someone invited you to a NexTask project.',
   });
 
   const text = `You are invited to ${projectName} on NexTask

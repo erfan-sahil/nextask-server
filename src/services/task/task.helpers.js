@@ -63,9 +63,7 @@ export const findTaskOrThrow = async (taskId, boardId, workspaceId) => {
 };
 
 export const findPopulatedTaskOrThrow = async (taskId, boardId, workspaceId) => {
-  const task = await populateTask(
-    Task.findOne({ _id: taskId, boardId, workspaceId })
-  );
+  const task = await populateTask(Task.findOne({ _id: taskId, boardId, workspaceId }));
 
   if (!task) {
     throw ApiError.notFound(TASK_MESSAGES.NOT_FOUND);
@@ -75,9 +73,7 @@ export const findPopulatedTaskOrThrow = async (taskId, boardId, workspaceId) => 
 };
 
 export const ensureColumnBelongsToBoard = async (columnId, boardId) => {
-  const column = await Column.findOne({ _id: columnId, boardId }).select(
-    '_id isCompletedColumn'
-  );
+  const column = await Column.findOne({ _id: columnId, boardId }).select('_id isCompletedColumn');
 
   if (!column) {
     throw ApiError.badRequest(TASK_MESSAGES.INVALID_COLUMN);
@@ -86,34 +82,20 @@ export const ensureColumnBelongsToBoard = async (columnId, boardId) => {
   return column;
 };
 
-export const ensureAssigneesAreMembers = async (
-  workspaceId,
-  projectId,
-  assigneeIds
-) => {
+export const ensureAssigneesAreMembers = async (workspaceId, projectId, assigneeIds) => {
   if (!assigneeIds?.length) {
     return;
   }
 
-  const { uniqueIds, allowed } = await resolveProjectMemberIds(
-    workspaceId,
-    projectId,
-    assigneeIds
-  );
+  const { uniqueIds, allowed } = await resolveProjectMemberIds(workspaceId, projectId, assigneeIds);
 
   if (uniqueIds.some((id) => !allowed.has(id))) {
     throw ApiError.badRequest(TASK_MESSAGES.INVALID_ASSIGNEE);
   }
 };
 
-export const ensureReporterIsMember = async (
-  workspaceId,
-  projectId,
-  reporterId
-) => {
-  const { allowed } = await resolveProjectMemberIds(workspaceId, projectId, [
-    reporterId,
-  ]);
+export const ensureReporterIsMember = async (workspaceId, projectId, reporterId) => {
+  const { allowed } = await resolveProjectMemberIds(workspaceId, projectId, [reporterId]);
 
   if (!allowed.has(reporterId.toString())) {
     throw ApiError.badRequest(TASK_MESSAGES.INVALID_REPORTER);
@@ -132,17 +114,12 @@ export const assertTaskUpdatePermissions = (membership, data, task) => {
     }
 
     if (field === 'labels') {
-      return (
-        JSON.stringify(data.labels ?? []) !== JSON.stringify(task.labels ?? [])
-      );
+      return JSON.stringify(data.labels ?? []) !== JSON.stringify(task.labels ?? []);
     }
 
     if (field === 'dueDate') {
       const currentDueDate = task.dueDate?.toISOString() ?? null;
-      const nextDueDate =
-        data.dueDate instanceof Date
-          ? data.dueDate.toISOString()
-          : data.dueDate;
+      const nextDueDate = data.dueDate instanceof Date ? data.dueDate.toISOString() : data.dueDate;
 
       return currentDueDate !== nextDueDate;
     }
@@ -155,8 +132,7 @@ export const assertTaskUpdatePermissions = (membership, data, task) => {
   }
 
   if (
-    (data.columnId !== undefined &&
-      data.columnId.toString() !== task.columnId.toString()) ||
+    (data.columnId !== undefined && data.columnId.toString() !== task.columnId.toString()) ||
     (data.position !== undefined && data.position !== task.position)
   ) {
     ensureCanMoveTask(membership);
@@ -181,9 +157,7 @@ export const assertTaskUpdatePermissions = (membership, data, task) => {
   if (data.completedAt !== undefined) {
     const currentCompletedAt = task.completedAt?.toISOString() ?? null;
     const nextCompletedAt =
-      data.completedAt instanceof Date
-        ? data.completedAt.toISOString()
-        : data.completedAt;
+      data.completedAt instanceof Date ? data.completedAt.toISOString() : data.completedAt;
 
     if (currentCompletedAt !== nextCompletedAt) {
       ensureCanChangeTaskStatus(membership);
@@ -200,31 +174,19 @@ export const resolveCompletedAtForColumn = (column, existingCompletedAt) => {
 };
 
 export const ensureActorCanViewTasks = async (workspace, projectId, userId) => {
-  const membership = await findEffectiveProjectMembershipOrThrow(
-    workspace._id,
-    projectId,
-    userId
-  );
+  const membership = await findEffectiveProjectMembershipOrThrow(workspace._id, projectId, userId);
   ensureCanViewTask(membership);
   return membership;
 };
 
 export const ensureActorCanCreateTask = async (workspace, projectId, userId) => {
-  const membership = await findEffectiveProjectMembershipOrThrow(
-    workspace._id,
-    projectId,
-    userId
-  );
+  const membership = await findEffectiveProjectMembershipOrThrow(workspace._id, projectId, userId);
   ensureCanCreateTask(membership);
   return membership;
 };
 
 export const ensureActorCanDeleteTask = async (workspace, projectId, userId) => {
-  const membership = await findEffectiveProjectMembershipOrThrow(
-    workspace._id,
-    projectId,
-    userId
-  );
+  const membership = await findEffectiveProjectMembershipOrThrow(workspace._id, projectId, userId);
   ensureCanDeleteTask(membership);
   return membership;
 };

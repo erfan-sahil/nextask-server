@@ -12,10 +12,7 @@ import {
 export { loadWorkspaceByWorkspaceId };
 
 export const loadProjectByProjectId = asyncHandler(async (req, _res, next) => {
-  req.project = await findProjectOrThrow(
-    req.params.projectId,
-    req.workspace._id
-  );
+  req.project = await findProjectOrThrow(req.params.projectId, req.workspace._id);
   next();
 });
 
@@ -56,10 +53,6 @@ export const requireBoardDelete = asyncHandler(async (req, _res, next) => {
 });
 
 export const loadBoard = asyncHandler(async (req, _res, next) => {
-  req.board = await findBoardOrThrow(
-    req.params.boardId,
-    req.project._id,
-    req.workspace._id
-  );
+  req.board = await findBoardOrThrow(req.params.boardId, req.project._id, req.workspace._id);
   next();
 });

@@ -10,10 +10,7 @@ export const previewWorkspaceInvitation = asyncHandler(async (req, res) => {
 });
 
 export const acceptWorkspaceInvitation = asyncHandler(async (req, res) => {
-  const result = await workspaceInvitationService.accept(
-    req.body.token,
-    req.user
-  );
+  const result = await workspaceInvitationService.accept(req.body.token, req.user);
 
   res.json(ApiResponse.ok(result, WORKSPACE_INVITATION_MESSAGES.ACCEPTED));
 });

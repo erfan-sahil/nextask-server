@@ -8,8 +8,7 @@ export const PROJECT_INVITATION_MESSAGES = {
   REVOKED: 'This project invitation is no longer valid',
   ALREADY_PENDING: 'An invitation has already been sent to this email address',
   ALREADY_MEMBER: 'This user already has access to the project',
-  EMAIL_MISMATCH:
-    'You must sign in with the email address that received the invitation',
+  EMAIL_MISMATCH: 'You must sign in with the email address that received the invitation',
   SELF_INVITE: 'You cannot invite yourself to the project',
   EMAIL_FAILED:
     'Invitation was created, but we could not send the confirmation email. Please try again later.',

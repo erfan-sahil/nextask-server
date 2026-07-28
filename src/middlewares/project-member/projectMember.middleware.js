@@ -8,10 +8,7 @@ import {
 
 export const loadProjectContext = asyncHandler(async (req, _res, next) => {
   req.workspace = await findWorkspaceOrThrow(req.params.workspaceId);
-  req.project = await findProjectOrThrow(
-    req.params.projectId,
-    req.workspace._id
-  );
+  req.project = await findProjectOrThrow(req.params.projectId, req.workspace._id);
   next();
 });
 
@@ -25,9 +22,6 @@ export const requireProjectMemberView = asyncHandler(async (req, _res, next) => 
 });
 
 export const loadProjectMember = asyncHandler(async (req, _res, next) => {
-  req.projectMember = await findProjectMemberOrThrow(
-    req.params.memberId,
-    req.project._id
-  );
+  req.projectMember = await findProjectMemberOrThrow(req.params.memberId, req.project._id);
   next();
 });

@@ -61,7 +61,10 @@ export const buildEmailDivider = () =>
 export const formatRoleLabel = (role) =>
   String(role || '')
     .toLowerCase()
-    .replace(/(^|\s|_)([a-z])/g, (_match, sep, char) => `${sep === '_' ? ' ' : sep}${char.toUpperCase()}`)
+    .replace(
+      /(^|\s|_)([a-z])/g,
+      (_match, sep, char) => `${sep === '_' ? ' ' : sep}${char.toUpperCase()}`
+    )
     .trim();
 
 export const buildEmailRoleBadge = (role) =>

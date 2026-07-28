@@ -6,14 +6,9 @@ import { WORKSPACE_INVITATION_MESSAGES } from '../../constants/workspaceInvitati
 import { WORKSPACE_MEMBER_ROLE } from '../../constants/workspaceMemberRole.js';
 import { ApiError } from '../../utils/ApiError.js';
 import { logger } from '../../utils/logger.js';
-import {
-  generateInvitationToken,
-  hashInvitationToken,
-} from '../../utils/invitationToken.js';
+import { generateInvitationToken, hashInvitationToken } from '../../utils/invitationToken.js';
 import { emailService } from '../email/email.service.js';
-import {
-  buildInvitationAcceptUrl,
-} from '../email/templates/workspaceInvitation.template.js';
+import { buildInvitationAcceptUrl } from '../email/templates/workspaceInvitation.template.js';
 import {
   findMemberByWorkspaceAndUser,
   ensureActorCanInviteMembers,
@@ -30,15 +25,9 @@ import {
 
 const normalizeEmail = (email) => email.trim().toLowerCase();
 
-const buildInviterName = (user) =>
-  `${user.firstName} ${user.lastName}`.trim() || user.email;
+const buildInviterName = (user) => `${user.firstName} ${user.lastName}`.trim() || user.email;
 
-const sendInvitationEmail = async ({
-  invitation,
-  workspace,
-  inviter,
-  token,
-}) => {
+const sendInvitationEmail = async ({ invitation, workspace, inviter, token }) => {
   try {
     await emailService.sendWorkspaceInvitationEmail({
       to: invitation.email,
@@ -72,23 +61,16 @@ export const workspaceInvitationService = {
       ensureNotOwnerRoleAssignment(role);
     }
 
-    const actor = await User.findById(actorUserId).select(
-      'firstName lastName email'
-    );
+    const actor = await User.findById(actorUserId).select('firstName lastName email');
 
     if (actor.email.toLowerCase() === normalizedEmail) {
       throw ApiError.badRequest(WORKSPACE_INVITATION_MESSAGES.SELF_INVITE);
     }
 
-    const invitedUser = await User.findOne({ email: normalizedEmail }).select(
-      '_id email'
-    );
+    const invitedUser = await User.findOne({ email: normalizedEmail }).select('_id email');
 
     if (invitedUser) {
-      const existingMember = await findMemberByWorkspaceAndUser(
-        workspace._id,
-        invitedUser._id
-      );
+      const existingMember = await findMemberByWorkspaceAndUser(workspace._id, invitedUser._id);
 
       if (existingMember) {
         throw ApiError.conflict(WORKSPACE_INVITATION_MESSAGES.ALREADY_MEMBER);
@@ -139,9 +121,7 @@ export const workspaceInvitationService = {
       token,
     });
 
-    const populatedInvitation = await findPopulatedInvitationOrThrow(
-      invitation._id
-    );
+    const populatedInvitation = await findPopulatedInvitationOrThrow(invitation._id);
 
     return {
       invitation: populatedInvitation,
@@ -183,10 +163,7 @@ export const workspaceInvitationService = {
       throw ApiError.forbidden(WORKSPACE_INVITATION_MESSAGES.EMAIL_MISMATCH);
     }
 
-    const existingMember = await findMemberByWorkspaceAndUser(
-      invitation.workspaceId,
-      user._id
-    );
+    const existingMember = await findMemberByWorkspaceAndUser(invitation.workspaceId, user._id);
 
     if (existingMember) {
       throw ApiError.conflict(WORKSPACE_INVITATION_MESSAGES.ALREADY_MEMBER);

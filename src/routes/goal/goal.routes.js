@@ -27,27 +27,10 @@ router.use(loadWorkspaceByWorkspaceId);
 router.post('/', validate(createGoalSchema), requireGoalManagement, createGoal);
 router.get('/', validate(listGoalsSchema), requireGoalView, listGoals);
 
-router.get(
-  '/:goalId',
-  validate(goalIdSchema),
-  requireGoalView,
-  getGoal
-);
+router.get('/:goalId', validate(goalIdSchema), requireGoalView, getGoal);
 
-router.patch(
-  '/:goalId',
-  validate(updateGoalSchema),
-  requireGoalManagement,
-  loadGoal,
-  updateGoal
-);
+router.patch('/:goalId', validate(updateGoalSchema), requireGoalManagement, loadGoal, updateGoal);
 
-router.delete(
-  '/:goalId',
-  validate(goalIdSchema),
-  requireGoalManagement,
-  loadGoal,
-  deleteGoal
-);
+router.delete('/:goalId', validate(goalIdSchema), requireGoalManagement, loadGoal, deleteGoal);
 
 export default router;

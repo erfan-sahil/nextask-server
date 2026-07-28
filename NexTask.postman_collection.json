@@ -84,15 +84,9 @@
         "url": {
           "raw": "http://{{host}}:{{port}}/api/v1/health",
           "protocol": "http",
-          "host": [
-            "{{host}}"
-          ],
+          "host": ["{{host}}"],
           "port": "{{port}}",
-          "path": [
-            "api",
-            "v1",
-            "health"
-          ]
+          "path": ["api", "v1", "health"]
         }
       },
       "response": []
@@ -141,16 +135,9 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/auth/register",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
-              "path": [
-                "api",
-                "v1",
-                "auth",
-                "register"
-              ]
+              "path": ["api", "v1", "auth", "register"]
             }
           },
           "response": []
@@ -196,16 +183,9 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/auth/login",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
-              "path": [
-                "api",
-                "v1",
-                "auth",
-                "login"
-              ]
+              "path": ["api", "v1", "auth", "login"]
             }
           },
           "response": []
@@ -228,16 +208,9 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/auth/me",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
-              "path": [
-                "api",
-                "v1",
-                "auth",
-                "me"
-              ]
+              "path": ["api", "v1", "auth", "me"]
             }
           },
           "response": []
@@ -269,16 +242,9 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/auth/refresh",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
-              "path": [
-                "api",
-                "v1",
-                "auth",
-                "refresh"
-              ]
+              "path": ["api", "v1", "auth", "refresh"]
             }
           },
           "response": []
@@ -301,16 +267,9 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/auth/logout",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
-              "path": [
-                "api",
-                "v1",
-                "auth",
-                "logout"
-              ]
+              "path": ["api", "v1", "auth", "logout"]
             }
           },
           "response": []
@@ -368,15 +327,9 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
-              "path": [
-                "api",
-                "v1",
-                "workspaces"
-              ]
+              "path": ["api", "v1", "workspaces"]
             },
             "description": "Creates a workspace. Slug is auto-generated from name if omitted.\n\nOptional fields: slug, logo, ownerId, status (ACTIVE | ARCHIVED)\nVisibility: PRIVATE | TEAM | PUBLIC"
           },
@@ -400,15 +353,9 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces?page=1&limit=10",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
-              "path": [
-                "api",
-                "v1",
-                "workspaces"
-              ],
+              "path": ["api", "v1", "workspaces"],
               "query": [
                 {
                   "key": "page",
@@ -462,16 +409,9 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
-              "path": [
-                "api",
-                "v1",
-                "workspaces",
-                "{{workspaceId}}"
-              ]
+              "path": ["api", "v1", "workspaces", "{{workspaceId}}"]
             },
             "description": "Get a single workspace. Requires owner access or PUBLIC visibility."
           },
@@ -509,16 +449,9 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
-              "path": [
-                "api",
-                "v1",
-                "workspaces",
-                "{{workspaceId}}"
-              ]
+              "path": ["api", "v1", "workspaces", "{{workspaceId}}"]
             },
             "description": "Update workspace fields. Only the owner can update.\n\nUpdatable: name, slug, description, logo, visibility, status"
           },
@@ -542,16 +475,9 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
-              "path": [
-                "api",
-                "v1",
-                "workspaces",
-                "{{workspaceId}}"
-              ]
+              "path": ["api", "v1", "workspaces", "{{workspaceId}}"]
             },
             "description": "Permanently delete a workspace. Only the owner can delete."
           },
@@ -594,17 +520,9 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/members",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
-              "path": [
-                "api",
-                "v1",
-                "workspaces",
-                "{{workspaceId}}",
-                "members"
-              ]
+              "path": ["api", "v1", "workspaces", "{{workspaceId}}", "members"]
             },
             "description": "Invite a user by email. Requires INVITE_MEMBERS permission (OWNER, ADMIN).\n\nSends a confirmation email with an accept link.\nAssignable roles: ADMIN | MEMBER (OWNER is reserved for the creator)."
           },
@@ -644,17 +562,9 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/members?page=1&limit=10",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
-              "path": [
-                "api",
-                "v1",
-                "workspaces",
-                "{{workspaceId}}",
-                "members"
-              ],
+              "path": ["api", "v1", "workspaces", "{{workspaceId}}", "members"],
               "query": [
                 {
                   "key": "page",
@@ -700,18 +610,9 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/members/{{memberId}}",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
-              "path": [
-                "api",
-                "v1",
-                "workspaces",
-                "{{workspaceId}}",
-                "members",
-                "{{memberId}}"
-              ]
+              "path": ["api", "v1", "workspaces", "{{workspaceId}}", "members", "{{memberId}}"]
             },
             "description": "Get a single workspace member by member record ID."
           },
@@ -749,18 +650,9 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/members/{{memberId}}",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
-              "path": [
-                "api",
-                "v1",
-                "workspaces",
-                "{{workspaceId}}",
-                "members",
-                "{{memberId}}"
-              ]
+              "path": ["api", "v1", "workspaces", "{{workspaceId}}", "members", "{{memberId}}"]
             },
             "description": "Update a member role. Requires CHANGE_MEMBER_ROLE (OWNER, ADMIN).\n\nRole hierarchy: OWNER > ADMIN > MEMBER.\nYou can only update members with a lower role than yours. Cannot change your own role or assign OWNER."
           },
@@ -784,18 +676,9 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/members/{{memberId}}",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
-              "path": [
-                "api",
-                "v1",
-                "workspaces",
-                "{{workspaceId}}",
-                "members",
-                "{{memberId}}"
-              ]
+              "path": ["api", "v1", "workspaces", "{{workspaceId}}", "members", "{{memberId}}"]
             },
             "description": "Remove a member. Requires REMOVE_MEMBERS to remove others (only lower roles).\n\nAny member except OWNER can leave the workspace themselves."
           },
@@ -854,17 +737,9 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
-              "path": [
-                "api",
-                "v1",
-                "workspaces",
-                "{{workspaceId}}",
-                "projects"
-              ]
+              "path": ["api", "v1", "workspaces", "{{workspaceId}}", "projects"]
             },
             "description": "Create a project inside a workspace. Requires CREATE_PROJECT (OWNER, ADMIN).\n\nThe creator is automatically added as the project OWNER.\nStatus: PLANNING | ACTIVE | ON_HOLD | COMPLETED"
           },
@@ -904,17 +779,9 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects?page=1&limit=10",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
-              "path": [
-                "api",
-                "v1",
-                "workspaces",
-                "{{workspaceId}}",
-                "projects"
-              ],
+              "path": ["api", "v1", "workspaces", "{{workspaceId}}", "projects"],
               "query": [
                 {
                   "key": "page",
@@ -960,18 +827,9 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
-              "path": [
-                "api",
-                "v1",
-                "workspaces",
-                "{{workspaceId}}",
-                "projects",
-                "{{projectId}}"
-              ]
+              "path": ["api", "v1", "workspaces", "{{workspaceId}}", "projects", "{{projectId}}"]
             },
             "description": "Get a single project by ID. Requires VIEW_PROJECT permission via workspace membership or a direct project membership."
           },
@@ -1009,18 +867,9 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
-              "path": [
-                "api",
-                "v1",
-                "workspaces",
-                "{{workspaceId}}",
-                "projects",
-                "{{projectId}}"
-              ]
+              "path": ["api", "v1", "workspaces", "{{workspaceId}}", "projects", "{{projectId}}"]
             },
             "description": "Update project fields. Requires UPDATE_PROJECT (OWNER, ADMIN) — resolved from the effective project role (workspace or project membership).\n\nUpdatable: name, description, icon, status, startDate, endDate"
           },
@@ -1044,18 +893,9 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
-              "path": [
-                "api",
-                "v1",
-                "workspaces",
-                "{{workspaceId}}",
-                "projects",
-                "{{projectId}}"
-              ]
+              "path": ["api", "v1", "workspaces", "{{workspaceId}}", "projects", "{{projectId}}"]
             },
             "description": "Delete a project. Requires DELETE_PROJECT (OWNER, ADMIN) via effective project role. Also removes the project's members and pending invitations."
           },
@@ -1098,9 +938,7 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/members",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
               "path": [
                 "api",
@@ -1150,9 +988,7 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/members?page=1&limit=10",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
               "path": [
                 "api",
@@ -1208,9 +1044,7 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/members/{{projectMemberId}}",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
               "path": [
                 "api",
@@ -1259,9 +1093,7 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/members/{{projectMemberId}}",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
               "path": [
                 "api",
@@ -1296,9 +1128,7 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/members/{{projectMemberId}}",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
               "path": [
                 "api",
@@ -1368,9 +1198,7 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
               "path": [
                 "api",
@@ -1420,9 +1248,7 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards?page=1&limit=10",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
               "path": [
                 "api",
@@ -1472,9 +1298,7 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards/{{boardId}}",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
               "path": [
                 "api",
@@ -1523,9 +1347,7 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards/{{boardId}}",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
               "path": [
                 "api",
@@ -1560,9 +1382,7 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards/{{boardId}}",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
               "path": [
                 "api",
@@ -1632,9 +1452,7 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards/{{boardId}}/columns",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
               "path": [
                 "api",
@@ -1686,9 +1504,7 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards/{{boardId}}/columns",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
               "path": [
                 "api",
@@ -1724,9 +1540,7 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards/{{boardId}}/columns/{{columnId}}",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
               "path": [
                 "api",
@@ -1777,9 +1591,7 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards/{{boardId}}/columns/{{columnId}}",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
               "path": [
                 "api",
@@ -1816,9 +1628,7 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards/{{boardId}}/columns/{{columnId}}",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
               "path": [
                 "api",
@@ -1890,9 +1700,7 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards/{{boardId}}/tasks",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
               "path": [
                 "api",
@@ -1944,9 +1752,7 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards/{{boardId}}/tasks?page=1&limit=20",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
               "path": [
                 "api",
@@ -2015,9 +1821,7 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards/{{boardId}}/tasks/{{taskId}}",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
               "path": [
                 "api",
@@ -2068,9 +1872,7 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards/{{boardId}}/tasks/{{taskId}}",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
               "path": [
                 "api",
@@ -2107,9 +1909,7 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/{{workspaceId}}/projects/{{projectId}}/boards/{{boardId}}/tasks/{{taskId}}",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
               "path": [
                 "api",
@@ -2144,17 +1944,9 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/invitations/preview?token={{invitationToken}}",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
-              "path": [
-                "api",
-                "v1",
-                "workspaces",
-                "invitations",
-                "preview"
-              ],
+              "path": ["api", "v1", "workspaces", "invitations", "preview"],
               "query": [
                 {
                   "key": "token",
@@ -2198,17 +1990,9 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/workspaces/invitations/accept",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
-              "path": [
-                "api",
-                "v1",
-                "workspaces",
-                "invitations",
-                "accept"
-              ]
+              "path": ["api", "v1", "workspaces", "invitations", "accept"]
             },
             "description": "Accept a workspace invitation. User must be logged in with the same email that received the invite."
           },
@@ -2230,17 +2014,9 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/projects/invitations/preview?token={{projectInvitationToken}}",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
-              "path": [
-                "api",
-                "v1",
-                "projects",
-                "invitations",
-                "preview"
-              ],
+              "path": ["api", "v1", "projects", "invitations", "preview"],
               "query": [
                 {
                   "key": "token",
@@ -2284,17 +2060,9 @@
             "url": {
               "raw": "http://{{host}}:{{port}}/api/v1/projects/invitations/accept",
               "protocol": "http",
-              "host": [
-                "{{host}}"
-              ],
+              "host": ["{{host}}"],
               "port": "{{port}}",
-              "path": [
-                "api",
-                "v1",
-                "projects",
-                "invitations",
-                "accept"
-              ]
+              "path": ["api", "v1", "projects", "invitations", "accept"]
             },
             "description": "Accept a project invitation. User must be logged in with the same email that received the invite. Adds the user as a project-scoped member with access to only this project."
           },

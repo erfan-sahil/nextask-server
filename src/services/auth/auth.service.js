@@ -63,9 +63,7 @@ const assignVerificationOtp = (record) => {
   const otp = generateOtp();
 
   record.emailVerificationOtp = hashOtp(otp);
-  record.emailVerificationExpires = new Date(
-    Date.now() + EMAIL_VERIFICATION.OTP_EXPIRY_MS
-  );
+  record.emailVerificationExpires = new Date(Date.now() + EMAIL_VERIFICATION.OTP_EXPIRY_MS);
   record.emailVerificationSentAt = new Date();
   record.emailVerificationAttempts = 0;
 
@@ -78,14 +76,10 @@ const assertValidOtp = (record, otp) => {
     !record.emailVerificationExpires ||
     record.emailVerificationExpires < new Date()
   ) {
-    throw ApiError.badRequest(
-      'Verification code has expired. Please request a new one.'
-    );
+    throw ApiError.badRequest('Verification code has expired. Please request a new one.');
   }
 
-  if (
-    record.emailVerificationAttempts >= EMAIL_VERIFICATION.MAX_VERIFY_ATTEMPTS
-  ) {
+  if (record.emailVerificationAttempts >= EMAIL_VERIFICATION.MAX_VERIFY_ATTEMPTS) {
     throw ApiError.tooManyRequests(
       'Too many invalid attempts. Please request a new verification code.'
     );
@@ -105,13 +99,12 @@ const findPendingRegistrationByEmail = (email) =>
   );
 
 const assertRegistrationAvailable = async ({ email, username }) => {
-  const [existingEmail, existingUsername, pendingEmail, pendingUsername] =
-    await Promise.all([
-      User.findOne({ email }),
-      User.findOne({ username }),
-      PendingRegistration.findOne({ email }),
-      PendingRegistration.findOne({ username }),
-    ]);
+  const [existingEmail, existingUsername, pendingEmail, pendingUsername] = await Promise.all([
+    User.findOne({ email }),
+    User.findOne({ username }),
+    PendingRegistration.findOne({ email }),
+    PendingRegistration.findOne({ username }),
+  ]);
 
   if (existingEmail) {
     throw ApiError.conflict('Email already registered');
@@ -187,10 +180,7 @@ export const authService = {
   async login({ email, password }) {
     const pendingRegistration = await findPendingRegistrationByEmail(email);
 
-    if (
-      pendingRegistration &&
-      (await pendingRegistration.comparePassword(password))
-    ) {
+    if (pendingRegistration && (await pendingRegistration.comparePassword(password))) {
       throw ApiError.forbidden(
         'Please verify your email before signing in. Check your inbox for the verification code.'
       );
@@ -227,8 +217,7 @@ export const authService = {
       );
     }
 
-    const pendingRegistration =
-      await findPendingRegistrationByEmail(normalizedEmail);
+    const pendingRegistration = await findPendingRegistrationByEmail(normalizedEmail);
 
     if (!pendingRegistration) {
       throw ApiError.notFound(

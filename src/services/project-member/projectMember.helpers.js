@@ -32,9 +32,7 @@ export const findProjectMemberOrThrow = async (memberId, projectId) => {
 };
 
 export const findPopulatedProjectMemberOrThrow = async (memberId, projectId) => {
-  const member = await populateProjectMember(
-    ProjectMember.findOne({ _id: memberId, projectId })
-  );
+  const member = await populateProjectMember(ProjectMember.findOne({ _id: memberId, projectId }));
 
   if (!member) {
     throw ApiError.notFound(PROJECT_MEMBER_MESSAGES.NOT_FOUND);
@@ -50,11 +48,7 @@ export const findPopulatedProjectMemberOrThrow = async (memberId, projectId) => 
  * project members only have access to the project they were invited to. When a
  * user has both, the higher-ranked role wins.
  */
-export const resolveEffectiveProjectMembership = async (
-  workspaceId,
-  projectId,
-  userId
-) => {
+export const resolveEffectiveProjectMembership = async (workspaceId, projectId, userId) => {
   const [workspaceMembership, projectMembership] = await Promise.all([
     WorkspaceMember.findOne({ workspaceId, userId }),
     ProjectMember.findOne({ projectId, userId }),
@@ -71,16 +65,8 @@ export const resolveEffectiveProjectMembership = async (
   );
 };
 
-export const findEffectiveProjectMembershipOrThrow = async (
-  workspaceId,
-  projectId,
-  userId
-) => {
-  const membership = await resolveEffectiveProjectMembership(
-    workspaceId,
-    projectId,
-    userId
-  );
+export const findEffectiveProjectMembershipOrThrow = async (workspaceId, projectId, userId) => {
+  const membership = await resolveEffectiveProjectMembership(workspaceId, projectId, userId);
 
   if (!membership) {
     throw ApiError.forbidden(PROJECT_MEMBER_MESSAGES.NOT_A_MEMBER);
@@ -95,30 +81,14 @@ const ensureEffectivePermission = (membership, permission) => {
   }
 };
 
-export const ensureActorCanViewProjectMembers = async (
-  workspace,
-  projectId,
-  userId
-) => {
-  const membership = await findEffectiveProjectMembershipOrThrow(
-    workspace._id,
-    projectId,
-    userId
-  );
+export const ensureActorCanViewProjectMembers = async (workspace, projectId, userId) => {
+  const membership = await findEffectiveProjectMembershipOrThrow(workspace._id, projectId, userId);
   ensureEffectivePermission(membership, WORKSPACE_PERMISSION.VIEW_MEMBERS);
   return membership;
 };
 
-export const ensureActorCanInviteProjectMembers = async (
-  workspace,
-  projectId,
-  userId
-) => {
-  const membership = await findEffectiveProjectMembershipOrThrow(
-    workspace._id,
-    projectId,
-    userId
-  );
+export const ensureActorCanInviteProjectMembers = async (workspace, projectId, userId) => {
+  const membership = await findEffectiveProjectMembershipOrThrow(workspace._id, projectId, userId);
   ensureEffectivePermission(membership, WORKSPACE_PERMISSION.INVITE_MEMBERS);
   return membership;
 };
@@ -130,10 +100,7 @@ export const ensureNotOwnerRoleAssignment = (role) => {
 };
 
 export const ensureCanManageTargetProjectMember = (actorMembership, targetMember) => {
-  ensureEffectivePermission(
-    actorMembership,
-    WORKSPACE_PERMISSION.CHANGE_MEMBER_ROLE
-  );
+  ensureEffectivePermission(actorMembership, WORKSPACE_PERMISSION.CHANGE_MEMBER_ROLE);
 
   if (targetMember.role === WORKSPACE_MEMBER_ROLE.OWNER) {
     throw ApiError.badRequest(PROJECT_MEMBER_MESSAGES.OWNER_ROLE_UPDATE);
@@ -145,10 +112,7 @@ export const ensureCanManageTargetProjectMember = (actorMembership, targetMember
 };
 
 export const ensureCanRemoveTargetProjectMember = (actorMembership, targetMember) => {
-  ensureEffectivePermission(
-    actorMembership,
-    WORKSPACE_PERMISSION.REMOVE_MEMBERS
-  );
+  ensureEffectivePermission(actorMembership, WORKSPACE_PERMISSION.REMOVE_MEMBERS);
 
   if (targetMember.role === WORKSPACE_MEMBER_ROLE.OWNER) {
     throw ApiError.badRequest(PROJECT_MEMBER_MESSAGES.OWNER_REMOVE);

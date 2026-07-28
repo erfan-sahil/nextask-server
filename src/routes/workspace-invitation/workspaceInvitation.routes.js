@@ -12,11 +12,7 @@ import {
 
 const router = Router();
 
-router.get(
-  '/preview',
-  validate(previewWorkspaceInvitationSchema),
-  previewWorkspaceInvitation
-);
+router.get('/preview', validate(previewWorkspaceInvitationSchema), previewWorkspaceInvitation);
 
 router.post(
   '/accept',

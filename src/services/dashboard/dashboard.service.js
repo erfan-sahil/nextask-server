@@ -3,18 +3,13 @@ import { ProjectMember } from '../../models/project-member/projectMember.model.j
 import { Task } from '../../models/task/task.model.js';
 import { Column } from '../../models/column/column.model.js';
 import { Meeting } from '../../models/meeting/meeting.model.js';
-import { Workspace } from '../../models/workspace/workspace.model.js';
 import { WorkspaceMember } from '../../models/workspace-member/workspaceMember.model.js';
 import { Notification } from '../../models/notification/notification.model.js';
 import { PROJECT_STATUS } from '../../constants/projectStatus.js';
 import { WORKSPACE_MEMBER_ROLE } from '../../constants/workspaceMemberRole.js';
 import { USER_POPULATE_FIELDS } from '../workspace/workspace.helpers.js';
 
-const PRIVILEGED_ROLES = [
-  WORKSPACE_MEMBER_ROLE.OWNER,
-  WORKSPACE_MEMBER_ROLE.ADMIN,
-];
-const PROJECT_LIMIT = 12;
+const PRIVILEGED_ROLES = [WORKSPACE_MEMBER_ROLE.OWNER, WORKSPACE_MEMBER_ROLE.ADMIN];
 const MY_TASK_LIMIT = 8;
 const ACTIVITY_LIMIT = 10;
 const MEETING_LIMIT = 6;
@@ -173,12 +168,8 @@ export const dashboardService = {
       .map((membership) => membership.projectId);
 
     const taskAccessClauses = [
-      ...(privilegedWorkspaceIds.length
-        ? [{ workspaceId: { $in: privilegedWorkspaceIds } }]
-        : []),
-      ...(privilegedProjectIds.length
-        ? [{ projectId: { $in: privilegedProjectIds } }]
-        : []),
+      ...(privilegedWorkspaceIds.length ? [{ workspaceId: { $in: privilegedWorkspaceIds } }] : []),
+      ...(privilegedProjectIds.length ? [{ projectId: { $in: privilegedProjectIds } }] : []),
       ...(memberWorkspaceIds.length
         ? [
             {
@@ -205,7 +196,6 @@ export const dashboardService = {
           dueThisWeek: 0,
           teamMembers: 0,
         },
-        projects: [],
         myTasks: [],
         upcomingTasks: [],
         upcomingMeetings: [],
@@ -223,15 +213,10 @@ export const dashboardService = {
       (membership) => membership.workspaceId
     );
     const meetingMemberWorkspaceIds = [
-      ...new Set([
-        ...memberWorkspaceIds.map(String),
-        ...projectMembershipWorkspaceIds.map(String),
-      ]),
+      ...new Set([...memberWorkspaceIds.map(String), ...projectMembershipWorkspaceIds.map(String)]),
     ];
     const meetingAccessClauses = [
-      ...(privilegedWorkspaceIds.length
-        ? [{ workspaceId: { $in: privilegedWorkspaceIds } }]
-        : []),
+      ...(privilegedWorkspaceIds.length ? [{ workspaceId: { $in: privilegedWorkspaceIds } }] : []),
       ...(meetingMemberWorkspaceIds.length
         ? [
             {
@@ -243,44 +228,35 @@ export const dashboardService = {
     ];
     const personalProjectIds = taskStatistics.map((item) => item._id);
     const projectAccessClauses = [
-      ...(privilegedWorkspaceIds.length
-        ? [{ workspaceId: { $in: privilegedWorkspaceIds } }]
-        : []),
+      ...(privilegedWorkspaceIds.length ? [{ workspaceId: { $in: privilegedWorkspaceIds } }] : []),
       ...(privilegedProjectIds.length ? [{ _id: { $in: privilegedProjectIds } }] : []),
       ...(personalProjectIds.length ? [{ _id: { $in: personalProjectIds } }] : []),
     ];
     const upcomingTaskConditions = [
-      ...(backlogColumnIds.length
-        ? [{ columnId: { $in: backlogColumnIds } }]
-        : []),
+      ...(backlogColumnIds.length ? [{ columnId: { $in: backlogColumnIds } }] : []),
       { dueDate: { $lt: startOfToday } },
       { dueDate: { $gte: startOfTomorrow } },
     ];
 
-    const [
-      projects,
-      memberIds,
-      myTasks,
-      upcomingTasks,
-      upcomingMeetings,
-      recentActivity,
-    ] =
+    const [projects, memberIds, myTasks, upcomingTasks, upcomingMeetings, recentActivity] =
       await Promise.all([
-      Project.find({ $or: projectAccessClauses })
-        .sort({ lastActivityAt: -1, createdAt: -1 })
-        .lean(),
-      Promise.all([
-        privilegedWorkspaceIds.length
-          ? WorkspaceMember.distinct('userId', {
-              workspaceId: { $in: privilegedWorkspaceIds },
-            })
+        projectAccessClauses.length
+          ? Project.find({ $or: projectAccessClauses })
+              .sort({ lastActivityAt: -1, createdAt: -1 })
+              .lean()
           : [],
-        privilegedProjectIds.length
-          ? ProjectMember.distinct('userId', {
-              projectId: { $in: privilegedProjectIds },
-            })
-          : [],
-      ]),
+        Promise.all([
+          privilegedWorkspaceIds.length
+            ? WorkspaceMember.distinct('userId', {
+                workspaceId: { $in: privilegedWorkspaceIds },
+              })
+            : [],
+          privilegedProjectIds.length
+            ? ProjectMember.distinct('userId', {
+                projectId: { $in: privilegedProjectIds },
+              })
+            : [],
+        ]),
         getMyTasks(
           userId,
           { $or: taskAccessClauses },
@@ -299,59 +275,17 @@ export const dashboardService = {
         }),
         getRecentActivity(userId),
       ]);
-    const workspaces = await Workspace.find({
-      _id: { $in: projects.map((project) => project.workspaceId) },
-    })
-      .select('name slug')
-      .lean();
-    const workspacesById = new Map(
-      workspaces.map((workspace) => [String(workspace._id), workspace])
-    );
-
-    const statisticsByProject = new Map(
-      taskStatistics.map((statistic) => [String(statistic._id), statistic])
-    );
-    const privilegedWorkspaceIdSet = new Set(
-      privilegedWorkspaceIds.map(String)
-    );
-    const privilegedProjectIdSet = new Set(privilegedProjectIds.map(String));
-    const visibleProjects = projects.map((project) => {
-      const isPrivileged =
-        privilegedWorkspaceIdSet.has(String(project.workspaceId)) ||
-        privilegedProjectIdSet.has(String(project._id));
-      const taskStatisticsForProject = statisticsByProject.get(String(project._id));
-
-      return {
-        ...project,
-        workspace: workspacesById.get(String(project.workspaceId)) ?? null,
-        taskCount: isPrivileged
-          ? project.taskCount
-          : (taskStatisticsForProject?.taskCount ?? 0),
-        completedTaskCount: isPrivileged
-          ? Math.max(
-              project.taskCount - (taskStatisticsForProject?.openTaskCount ?? 0),
-              0
-            )
-          : (taskStatisticsForProject?.completedTaskCount ?? 0),
-      };
-    });
-
     return {
       stats: {
-        activeProjects: visibleProjects.filter(
-          (project) => project.status === PROJECT_STATUS.ACTIVE
-        ).length,
-        openTasks: taskStatistics.reduce(
-          (total, statistic) => total + statistic.openTaskCount,
-          0
-        ),
+        activeProjects: projects.filter((project) => project.status === PROJECT_STATUS.ACTIVE)
+          .length,
+        openTasks: taskStatistics.reduce((total, statistic) => total + statistic.openTaskCount, 0),
         dueThisWeek: taskStatistics.reduce(
           (total, statistic) => total + statistic.dueThisWeekCount,
           0
         ),
         teamMembers: new Set(memberIds.flat().map(String)).size,
       },
-      projects: visibleProjects.slice(0, PROJECT_LIMIT),
       myTasks,
       upcomingTasks,
       upcomingMeetings,

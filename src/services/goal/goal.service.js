@@ -2,11 +2,7 @@ import { Goal } from '../../models/goal/goal.model.js';
 import { GOAL_PRIORITY } from '../../constants/goalPriority.js';
 import { GOAL_STATUS } from '../../constants/goalStatus.js';
 import { sanitizeRichText } from '../../utils/sanitizeRichText.js';
-import {
-  assertValidDateRange,
-  findPopulatedGoalOrThrow,
-  populateGoal,
-} from './goal.helpers.js';
+import { assertValidDateRange, findPopulatedGoalOrThrow, populateGoal } from './goal.helpers.js';
 
 const resolveCompletedAt = (status, completedAt, existingCompletedAt = null) => {
   if (status === GOAL_STATUS.COMPLETED) {
@@ -57,12 +53,7 @@ export const goalService = {
 
     const skip = (page - 1) * limit;
     const [goals, total] = await Promise.all([
-      populateGoal(
-        Goal.find(filter)
-          .sort({ dueDate: 1, createdAt: -1 })
-          .skip(skip)
-          .limit(limit)
-      ),
+      populateGoal(Goal.find(filter).sort({ dueDate: 1, createdAt: -1 }).skip(skip).limit(limit)),
       Goal.countDocuments(filter),
     ]);
 
@@ -82,8 +73,7 @@ export const goalService = {
   },
 
   async update(workspace, goal, data) {
-    const startDate =
-      data.startDate !== undefined ? data.startDate : goal.startDate;
+    const startDate = data.startDate !== undefined ? data.startDate : goal.startDate;
     const dueDate = data.dueDate !== undefined ? data.dueDate : goal.dueDate;
 
     assertValidDateRange(startDate, dueDate);
@@ -114,11 +104,7 @@ export const goalService = {
 
     const nextStatus = data.status ?? goal.status;
     if (data.status !== undefined || data.completedAt !== undefined) {
-      goal.completedAt = resolveCompletedAt(
-        nextStatus,
-        data.completedAt,
-        goal.completedAt
-      );
+      goal.completedAt = resolveCompletedAt(nextStatus, data.completedAt, goal.completedAt);
     }
 
     await goal.save();

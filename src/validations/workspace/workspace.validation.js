@@ -2,10 +2,7 @@ import { z } from 'zod';
 import { WORKSPACE_VISIBILITY } from '../../constants/workspaceVisibility.js';
 import { WORKSPACE_STATUS } from '../../constants/workspaceStatus.js';
 import { WORKSPACE_MESSAGES } from '../../constants/workspaceMessages.js';
-import {
-  objectIdSchema,
-  paginationQuerySchema,
-} from '../common/common.validation.js';
+import { objectIdSchema, paginationQuerySchema } from '../common/common.validation.js';
 
 const slugSchema = z
   .string()
@@ -28,11 +25,7 @@ const workspaceFieldsSchema = {
     .max(100, 'Workspace name cannot exceed 100 characters')
     .trim(),
   slug: slugSchema,
-  description: z
-    .string()
-    .max(500, 'Description cannot exceed 500 characters')
-    .trim()
-    .optional(),
+  description: z.string().max(500, 'Description cannot exceed 500 characters').trim().optional(),
   logo: logoSchema,
   visibility: z.enum(Object.values(WORKSPACE_VISIBILITY), {
     message: `Visibility must be one of: ${Object.values(WORKSPACE_VISIBILITY).join(', ')}`,
@@ -84,10 +77,6 @@ export const listWorkspacesSchema = z.object({
     ...paginationQuerySchema,
     status: workspaceFieldsSchema.status.optional(),
     visibility: workspaceFieldsSchema.visibility.optional(),
-    search: z
-      .string()
-      .trim()
-      .max(100, 'Search query cannot exceed 100 characters')
-      .optional(),
+    search: z.string().trim().max(100, 'Search query cannot exceed 100 characters').optional(),
   }),
 });

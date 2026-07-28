@@ -123,11 +123,7 @@ export const taskService = {
     await ensureReporterIsMember(workspace._id, project._id, reporterId);
 
     if (data.assignees?.length) {
-      await ensureAssigneesAreMembers(
-        workspace._id,
-        project._id,
-        data.assignees
-      );
+      await ensureAssigneesAreMembers(workspace._id, project._id, data.assignees);
     }
 
     const session = await mongoose.startSession();
@@ -180,10 +176,7 @@ export const taskService = {
     return findPopulatedTaskOrThrow(task._id, board._id, workspace._id);
   },
 
-  async list(
-    board,
-    { page = 1, limit = 20, columnId, priority, assignee, search }
-  ) {
+  async list(board, { page = 1, limit = 20, columnId, priority, assignee, search }) {
     const filter = { boardId: board._id, workspaceId: board.workspaceId };
 
     if (columnId) {
@@ -209,12 +202,7 @@ export const taskService = {
     const skip = (page - 1) * limit;
 
     const [tasks, total] = await Promise.all([
-      populateTask(
-        Task.find(filter)
-          .sort({ position: 1, createdAt: 1 })
-          .skip(skip)
-          .limit(limit)
-      ),
+      populateTask(Task.find(filter).sort({ position: 1, createdAt: 1 }).skip(skip).limit(limit)),
       Task.countDocuments(filter),
     ]);
     const commentCounts = tasks.length
@@ -224,7 +212,7 @@ export const taskService = {
         ])
       : [];
     const commentCountByTaskId = new Map(
-      commentCounts.map(({ _id, count }) => [_id.toString(), count]),
+      commentCounts.map(({ _id, count }) => [_id.toString(), count])
     );
 
     return {
@@ -259,11 +247,7 @@ export const taskService = {
     }
 
     if (data.assignees !== undefined) {
-      await ensureAssigneesAreMembers(
-        workspace._id,
-        project._id,
-        data.assignees
-      );
+      await ensureAssigneesAreMembers(workspace._id, project._id, data.assignees);
     }
 
     if (data.title !== undefined) {
@@ -296,10 +280,7 @@ export const taskService = {
 
     if (data.columnId !== undefined) {
       if (data.completedAt === undefined) {
-        task.completedAt = resolveCompletedAtForColumn(
-          targetColumn,
-          task.completedAt
-        );
+        task.completedAt = resolveCompletedAtForColumn(targetColumn, task.completedAt);
       }
     }
 

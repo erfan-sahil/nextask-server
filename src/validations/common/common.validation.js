@@ -5,9 +5,7 @@ export const objectIdSchema = z
   .regex(/^[0-9a-fA-F]{24}$/, 'Invalid resource ID format');
 
 const isValidQueryInt = (value) =>
-  typeof value === 'number'
-    ? Number.isInteger(value)
-    : /^[1-9]\d*$/.test(String(value));
+  typeof value === 'number' ? Number.isInteger(value) : /^[1-9]\d*$/.test(String(value));
 
 const optionalQueryInt = (fieldName, { min = 1, max } = {}) =>
   z
@@ -42,9 +40,7 @@ const optionalQueryInt = (fieldName, { min = 1, max } = {}) =>
         });
       }
     })
-    .transform((value) =>
-      value === undefined || value === '' ? undefined : Number(value)
-    );
+    .transform((value) => (value === undefined || value === '' ? undefined : Number(value)));
 
 export const paginationQuerySchema = {
   page: optionalQueryInt('Page'),

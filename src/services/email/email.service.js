@@ -89,13 +89,7 @@ export const emailService = {
     });
   },
 
-  async sendWorkspaceInvitationEmail({
-    to,
-    workspaceName,
-    role,
-    invitedByName,
-    acceptUrl,
-  }) {
+  async sendWorkspaceInvitationEmail({ to, workspaceName, role, invitedByName, acceptUrl }) {
     const { html, text } = buildWorkspaceInvitationEmail({
       workspaceName,
       role,

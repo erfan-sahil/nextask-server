@@ -65,9 +65,7 @@ export const columnService = {
   },
 
   async list(board) {
-    const columns = await populateColumn(
-      Column.find({ boardId: board._id }).sort({ position: 1 })
-    );
+    const columns = await populateColumn(Column.find({ boardId: board._id }).sort({ position: 1 }));
 
     return { columns };
   },

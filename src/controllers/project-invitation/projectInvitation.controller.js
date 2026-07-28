@@ -10,10 +10,7 @@ export const previewProjectInvitation = asyncHandler(async (req, res) => {
 });
 
 export const acceptProjectInvitation = asyncHandler(async (req, res) => {
-  const result = await projectInvitationService.accept(
-    req.body.token,
-    req.user
-  );
+  const result = await projectInvitationService.accept(req.body.token, req.user);
 
   res.json(ApiResponse.ok(result, PROJECT_INVITATION_MESSAGES.ACCEPTED));
 });

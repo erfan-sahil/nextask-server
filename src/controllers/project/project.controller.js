@@ -4,15 +4,9 @@ import { ApiResponse } from '../../utils/ApiResponse.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 
 export const createProject = asyncHandler(async (req, res) => {
-  const project = await projectService.create(
-    req.workspace,
-    req.body,
-    req.user._id
-  );
+  const project = await projectService.create(req.workspace, req.body, req.user._id);
 
-  res
-    .status(201)
-    .json(ApiResponse.created({ project }, PROJECT_MESSAGES.CREATED));
+  res.status(201).json(ApiResponse.created({ project }, PROJECT_MESSAGES.CREATED));
 });
 
 export const listProjects = asyncHandler(async (req, res) => {
@@ -25,21 +19,13 @@ export const listProjects = asyncHandler(async (req, res) => {
 });
 
 export const getProject = asyncHandler(async (req, res) => {
-  const project = await projectService.getById(
-    req.workspace,
-    req.params.projectId
-  );
+  const project = await projectService.getById(req.workspace, req.params.projectId);
 
   res.json(ApiResponse.ok({ project }, PROJECT_MESSAGES.FETCHED));
 });
 
 export const updateProject = asyncHandler(async (req, res) => {
-  const project = await projectService.update(
-    req.workspace,
-    req.project,
-    req.body,
-    req.user._id
-  );
+  const project = await projectService.update(req.workspace, req.project, req.body, req.user._id);
 
   res.json(ApiResponse.ok({ project }, PROJECT_MESSAGES.UPDATED));
 });

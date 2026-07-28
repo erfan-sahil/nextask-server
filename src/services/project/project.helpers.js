@@ -36,9 +36,7 @@ export const findProjectOrThrow = async (projectId, workspaceId) => {
 };
 
 export const findPopulatedProjectOrThrow = async (projectId, workspaceId) => {
-  const project = await populateProject(
-    Project.findOne({ _id: projectId, workspaceId })
-  );
+  const project = await populateProject(Project.findOne({ _id: projectId, workspaceId }));
 
   if (!project) {
     throw ApiError.notFound(PROJECT_MESSAGES.NOT_FOUND);
@@ -64,10 +62,7 @@ export const ensureActorCanCreateProject = async (workspace, userId) => {
 // Listing projects is allowed for workspace members (they see every project)
 // and for project-scoped members (they see only the projects they belong to).
 export const ensureActorCanListProjects = async (workspace, userId) => {
-  const workspaceMembership = await findMemberByWorkspaceAndUser(
-    workspace._id,
-    userId
-  );
+  const workspaceMembership = await findMemberByWorkspaceAndUser(workspace._id, userId);
 
   if (workspaceMembership) {
     ensureCanViewProject(workspaceMembership);
@@ -87,39 +82,19 @@ export const ensureActorCanListProjects = async (workspace, userId) => {
 };
 
 export const ensureActorCanViewProject = async (workspace, projectId, userId) => {
-  const membership = await findEffectiveProjectMembershipOrThrow(
-    workspace._id,
-    projectId,
-    userId
-  );
+  const membership = await findEffectiveProjectMembershipOrThrow(workspace._id, projectId, userId);
   ensureCanViewProject(membership);
   return membership;
 };
 
-export const ensureActorCanUpdateProject = async (
-  workspace,
-  projectId,
-  userId
-) => {
-  const membership = await findEffectiveProjectMembershipOrThrow(
-    workspace._id,
-    projectId,
-    userId
-  );
+export const ensureActorCanUpdateProject = async (workspace, projectId, userId) => {
+  const membership = await findEffectiveProjectMembershipOrThrow(workspace._id, projectId, userId);
   ensureCanUpdateProject(membership);
   return membership;
 };
 
-export const ensureActorCanDeleteProject = async (
-  workspace,
-  projectId,
-  userId
-) => {
-  const membership = await findEffectiveProjectMembershipOrThrow(
-    workspace._id,
-    projectId,
-    userId
-  );
+export const ensureActorCanDeleteProject = async (workspace, projectId, userId) => {
+  const membership = await findEffectiveProjectMembershipOrThrow(workspace._id, projectId, userId);
   ensureCanDeleteProject(membership);
   return membership;
 };

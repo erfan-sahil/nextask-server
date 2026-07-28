@@ -43,17 +43,15 @@ export const errorHandler = (err, req, res, _next) => {
     ...(!env.isProduction && { stack: err.stack }),
   });
 
-  res
-    .status(statusCode)
-    .json(
-      buildErrorResponse({
-        message,
-        errors,
-        errorCode,
-        requestId: req.requestId,
-        stack: err.stack,
-      })
-    );
+  res.status(statusCode).json(
+    buildErrorResponse({
+      message,
+      errors,
+      errorCode,
+      requestId: req.requestId,
+      stack: err.stack,
+    })
+  );
 };
 
 export const notFoundHandler = (req, _res, next) => {

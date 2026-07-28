@@ -24,11 +24,7 @@ export const loadActorMembership = asyncHandler(async (req, _res, next) => {
 });
 
 export const requireTaskView = asyncHandler(async (req, _res, next) => {
-  req.actorMembership = await ensureActorCanViewTasks(
-    req.workspace,
-    req.project._id,
-    req.user._id
-  );
+  req.actorMembership = await ensureActorCanViewTasks(req.workspace, req.project._id, req.user._id);
   next();
 });
 
@@ -51,10 +47,6 @@ export const requireTaskDelete = asyncHandler(async (req, _res, next) => {
 });
 
 export const loadTask = asyncHandler(async (req, _res, next) => {
-  req.task = await findTaskOrThrow(
-    req.params.taskId,
-    req.board._id,
-    req.workspace._id
-  );
+  req.task = await findTaskOrThrow(req.params.taskId, req.board._id, req.workspace._id);
   next();
 });

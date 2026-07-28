@@ -27,10 +27,7 @@ export const listProjectMembers = asyncHandler(async (req, res) => {
 });
 
 export const getProjectMember = asyncHandler(async (req, res) => {
-  const member = await projectMemberService.getById(
-    req.project,
-    req.params.memberId
-  );
+  const member = await projectMemberService.getById(req.project, req.params.memberId);
 
   res.json(ApiResponse.ok({ member }, PROJECT_MEMBER_MESSAGES.FETCHED));
 });
@@ -48,12 +45,7 @@ export const updateProjectMember = asyncHandler(async (req, res) => {
 });
 
 export const deleteProjectMember = asyncHandler(async (req, res) => {
-  await projectMemberService.remove(
-    req.workspace,
-    req.project,
-    req.projectMember,
-    req.user._id
-  );
+  await projectMemberService.remove(req.workspace, req.project, req.projectMember, req.user._id);
 
   res.json(ApiResponse.ok(null, PROJECT_MEMBER_MESSAGES.DELETED));
 });

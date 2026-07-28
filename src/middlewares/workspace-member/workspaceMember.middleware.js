@@ -6,35 +6,22 @@ import {
   findActorMembershipOrThrow,
 } from '../../services/workspace-member/workspaceMember.helpers.js';
 
-export const loadWorkspaceByWorkspaceId = asyncHandler(
-  async (req, _res, next) => {
-    req.workspace = await findWorkspaceOrThrow(req.params.workspaceId);
-    next();
-  }
-);
-
-export const loadActorMembership = asyncHandler(async (req, _res, next) => {
-  req.actorMembership = await findActorMembershipOrThrow(
-    req.workspace._id,
-    req.user._id
-  );
+export const loadWorkspaceByWorkspaceId = asyncHandler(async (req, _res, next) => {
+  req.workspace = await findWorkspaceOrThrow(req.params.workspaceId);
   next();
 });
 
-export const requireWorkspaceMemberView = asyncHandler(
-  async (req, _res, next) => {
-    req.actorMembership = await ensureActorCanViewMembers(
-      req.workspace,
-      req.user._id
-    );
-    next();
-  }
-);
+export const loadActorMembership = asyncHandler(async (req, _res, next) => {
+  req.actorMembership = await findActorMembershipOrThrow(req.workspace._id, req.user._id);
+  next();
+});
+
+export const requireWorkspaceMemberView = asyncHandler(async (req, _res, next) => {
+  req.actorMembership = await ensureActorCanViewMembers(req.workspace, req.user._id);
+  next();
+});
 
 export const loadWorkspaceMember = asyncHandler(async (req, _res, next) => {
-  req.workspaceMember = await findMemberOrThrow(
-    req.params.memberId,
-    req.workspace._id
-  );
+  req.workspaceMember = await findMemberOrThrow(req.params.memberId, req.workspace._id);
   next();
 });

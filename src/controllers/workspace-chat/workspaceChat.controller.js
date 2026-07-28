@@ -30,14 +30,16 @@ export const listWorkspaceChatMessages = asyncHandler(async (req, res) => {
       WorkspaceChatMessage.find({ workspaceId: req.workspace._id })
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
-        .limit(limit),
+        .limit(limit)
     ),
     WorkspaceChatMessage.countDocuments({ workspaceId: req.workspace._id }),
   ]);
-  res.json(ApiResponse.ok({
-    messages: messages.reverse(),
-    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) || 1 },
-  }));
+  res.json(
+    ApiResponse.ok({
+      messages: messages.reverse(),
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) || 1 },
+    })
+  );
 });
 
 export const createWorkspaceChatMessage = asyncHandler(async (req, res) => {
@@ -46,12 +48,13 @@ export const createWorkspaceChatMessage = asyncHandler(async (req, res) => {
     content: req.body.content,
     createdBy: req.user._id,
   });
-  const populatedMessage = await populateMessage(
-    WorkspaceChatMessage.findById(message._id),
-  );
+  const populatedMessage = await populateMessage(WorkspaceChatMessage.findById(message._id));
   getSocketServer()?.to(workspaceRoom(req.workspace._id)).emit('chat:message', populatedMessage);
 
-  const mentionedUserIds = await notificationService.mentionedUserIds(req.workspace._id, message.content);
+  const mentionedUserIds = await notificationService.mentionedUserIds(
+    req.workspace._id,
+    message.content
+  );
   await notificationService.createMany({
     workspaceId: req.workspace._id,
     recipientIds: mentionedUserIds,

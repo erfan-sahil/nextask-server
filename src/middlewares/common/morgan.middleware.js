@@ -10,8 +10,7 @@ morgan.token('body', (req) => {
   return JSON.stringify(safeBody);
 });
 
-const devFormat =
-  ':method :url :status :res[content-length] - :response-time ms :body';
+const devFormat = ':method :url :status :res[content-length] - :response-time ms :body';
 
 const productionFormat = 'combined';
 

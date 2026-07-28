@@ -37,27 +37,10 @@ router.get('/', validate(listTasksSchema), requireTaskView, listTasks);
 
 router.use('/:taskId/comments', taskCommentRoutes);
 
-router.get(
-  '/:taskId',
-  validate(taskIdSchema),
-  requireTaskView,
-  getTask
-);
+router.get('/:taskId', validate(taskIdSchema), requireTaskView, getTask);
 
-router.patch(
-  '/:taskId',
-  validate(updateTaskSchema),
-  loadActorMembership,
-  loadTask,
-  updateTask
-);
+router.patch('/:taskId', validate(updateTaskSchema), loadActorMembership, loadTask, updateTask);
 
-router.delete(
-  '/:taskId',
-  validate(taskIdSchema),
-  requireTaskDelete,
-  loadTask,
-  deleteTask
-);
+router.delete('/:taskId', validate(taskIdSchema), requireTaskDelete, loadTask, deleteTask);
 
 export default router;

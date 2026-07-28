@@ -1,10 +1,7 @@
 import { z } from 'zod';
 import { PROJECT_STATUS } from '../../constants/projectStatus.js';
 import { PROJECT_MESSAGES } from '../../constants/projectMessages.js';
-import {
-  objectIdSchema,
-  paginationQuerySchema,
-} from '../common/common.validation.js';
+import { objectIdSchema, paginationQuerySchema } from '../common/common.validation.js';
 
 const workspaceIdParamSchema = z.object({
   workspaceId: objectIdSchema,
@@ -16,11 +13,7 @@ const iconSchema = z
   .transform((value) => (value === '' ? null : value));
 
 const dateSchema = z
-  .union([
-    z.string().datetime({ message: 'Invalid date format' }),
-    z.date(),
-    z.null(),
-  ])
+  .union([z.string().datetime({ message: 'Invalid date format' }), z.date(), z.null()])
   .optional()
   .transform((value) => {
     if (value === undefined || value === null) {
@@ -36,11 +29,7 @@ const projectFieldsSchema = {
     .min(1, 'Project name is required')
     .max(200, 'Project name cannot exceed 200 characters')
     .trim(),
-  description: z
-    .string()
-    .max(2000, 'Description cannot exceed 2000 characters')
-    .trim()
-    .optional(),
+  description: z.string().max(2000, 'Description cannot exceed 2000 characters').trim().optional(),
   icon: iconSchema,
   status: z.enum(Object.values(PROJECT_STATUS), {
     message: `Status must be one of: ${Object.values(PROJECT_STATUS).join(', ')}`,
@@ -100,10 +89,6 @@ export const listProjectsSchema = z.object({
   query: z.object({
     ...paginationQuerySchema,
     status: projectFieldsSchema.status.optional(),
-    search: z
-      .string()
-      .trim()
-      .max(100, 'Search query cannot exceed 100 characters')
-      .optional(),
+    search: z.string().trim().max(100, 'Search query cannot exceed 100 characters').optional(),
   }),
 });

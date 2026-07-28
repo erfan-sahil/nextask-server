@@ -32,11 +32,7 @@ export const listTasks = asyncHandler(async (req, res) => {
 });
 
 export const getTask = asyncHandler(async (req, res) => {
-  const task = await taskService.getById(
-    req.workspace,
-    req.board,
-    req.params.taskId
-  );
+  const task = await taskService.getById(req.workspace, req.board, req.params.taskId);
 
   res.json(ApiResponse.ok({ task }, TASK_MESSAGES.FETCHED));
 });
@@ -57,7 +53,7 @@ export const updateTask = asyncHandler(async (req, res) => {
   let newAssigneeIds = [];
   if (req.body.assignees !== undefined) {
     newAssigneeIds = assigneeIds.filter(
-      (assigneeId) => !previousAssigneeIds.includes(assigneeId.toString()),
+      (assigneeId) => !previousAssigneeIds.includes(assigneeId.toString())
     );
     await notificationService.createMany({
       workspaceId: req.workspace._id,
@@ -71,9 +67,7 @@ export const updateTask = asyncHandler(async (req, res) => {
   const newAssigneeIdSet = new Set(newAssigneeIds.map((assigneeId) => assigneeId.toString()));
   await notificationService.createMany({
     workspaceId: req.workspace._id,
-    recipientIds: assigneeIds.filter(
-      (assigneeId) => !newAssigneeIdSet.has(assigneeId.toString()),
-    ),
+    recipientIds: assigneeIds.filter((assigneeId) => !newAssigneeIdSet.has(assigneeId.toString())),
     actorId: req.user._id,
     type: NOTIFICATION_TYPE.TASK_UPDATED,
     message: `${req.user.firstName} updated “${task.title}”`,

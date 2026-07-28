@@ -6,10 +6,7 @@ import { PROJECT_INVITATION_MESSAGES } from '../../constants/projectInvitationMe
 import { WORKSPACE_MEMBER_ROLE } from '../../constants/workspaceMemberRole.js';
 import { ApiError } from '../../utils/ApiError.js';
 import { logger } from '../../utils/logger.js';
-import {
-  generateInvitationToken,
-  hashInvitationToken,
-} from '../../utils/invitationToken.js';
+import { generateInvitationToken, hashInvitationToken } from '../../utils/invitationToken.js';
 import { emailService } from '../email/email.service.js';
 import { buildProjectInvitationAcceptUrl } from '../email/templates/projectInvitation.template.js';
 import {
@@ -29,8 +26,7 @@ import {
 
 const normalizeEmail = (email) => email.trim().toLowerCase();
 
-const buildInviterName = (user) =>
-  `${user.firstName} ${user.lastName}`.trim() || user.email;
+const buildInviterName = (user) => `${user.firstName} ${user.lastName}`.trim() || user.email;
 
 const sendInvitationEmail = async ({ invitation, project, workspace, inviter, token }) => {
   try {
@@ -71,17 +67,13 @@ export const projectInvitationService = {
       ensureNotOwnerRoleAssignment(role);
     }
 
-    const actor = await User.findById(actorUserId).select(
-      'firstName lastName email'
-    );
+    const actor = await User.findById(actorUserId).select('firstName lastName email');
 
     if (actor.email.toLowerCase() === normalizedEmail) {
       throw ApiError.badRequest(PROJECT_INVITATION_MESSAGES.SELF_INVITE);
     }
 
-    const invitedUser = await User.findOne({ email: normalizedEmail }).select(
-      '_id email'
-    );
+    const invitedUser = await User.findOne({ email: normalizedEmail }).select('_id email');
 
     if (invitedUser) {
       const existingAccess = await resolveEffectiveProjectMembership(
@@ -141,9 +133,7 @@ export const projectInvitationService = {
       token,
     });
 
-    const populatedInvitation = await findPopulatedInvitationOrThrow(
-      invitation._id
-    );
+    const populatedInvitation = await findPopulatedInvitationOrThrow(invitation._id);
 
     return {
       invitation: populatedInvitation,

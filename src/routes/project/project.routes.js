@@ -29,24 +29,14 @@ const router = Router({ mergeParams: true });
 
 router.use(loadWorkspaceByWorkspaceId);
 
-router.post(
-  '/',
-  validate(createProjectSchema),
-  requireProjectCreate,
-  createProject
-);
+router.post('/', validate(createProjectSchema), requireProjectCreate, createProject);
 
 router.get('/', validate(listProjectsSchema), requireProjectList, listProjects);
 
 router.use('/:projectId/members', projectMemberRoutes);
 router.use('/:projectId/boards', boardRoutes);
 
-router.get(
-  '/:projectId',
-  validate(projectIdSchema),
-  requireProjectView,
-  getProject
-);
+router.get('/:projectId', validate(projectIdSchema), requireProjectView, getProject);
 
 router.patch(
   '/:projectId',

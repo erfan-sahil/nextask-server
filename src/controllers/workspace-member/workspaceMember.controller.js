@@ -6,11 +6,7 @@ import { ApiResponse } from '../../utils/ApiResponse.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 
 export const inviteWorkspaceMember = asyncHandler(async (req, res) => {
-  const result = await workspaceInvitationService.invite(
-    req.workspace,
-    req.body,
-    req.user._id
-  );
+  const result = await workspaceInvitationService.invite(req.workspace, req.body, req.user._id);
 
   const message = result.invitationEmailSent
     ? WORKSPACE_INVITATION_MESSAGES.SENT
@@ -26,10 +22,7 @@ export const listWorkspaceMembers = asyncHandler(async (req, res) => {
 });
 
 export const getWorkspaceMember = asyncHandler(async (req, res) => {
-  const member = await workspaceMemberService.getById(
-    req.workspace,
-    req.params.memberId
-  );
+  const member = await workspaceMemberService.getById(req.workspace, req.params.memberId);
 
   res.json(ApiResponse.ok({ member }, WORKSPACE_MEMBER_MESSAGES.FETCHED));
 });
@@ -46,11 +39,7 @@ export const updateWorkspaceMember = asyncHandler(async (req, res) => {
 });
 
 export const deleteWorkspaceMember = asyncHandler(async (req, res) => {
-  await workspaceMemberService.remove(
-    req.workspace,
-    req.workspaceMember,
-    req.user._id
-  );
+  await workspaceMemberService.remove(req.workspace, req.workspaceMember, req.user._id);
 
   res.json(ApiResponse.ok(null, WORKSPACE_MEMBER_MESSAGES.DELETED));
 });

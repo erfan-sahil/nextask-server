@@ -36,11 +36,15 @@ export const initializeSocketServer = (httpServer) => {
     socket.join(userRoom(socket.userId));
 
     socket.on('workspace:join', async (workspaceId, acknowledge) => {
-      const member = await WorkspaceMember.findOne({ workspaceId, userId: socket.userId }).select('role');
-      const hasProjectScopedAccess = !member && await ProjectMember.exists({
-        workspaceId,
-        userId: socket.userId,
-      });
+      const member = await WorkspaceMember.findOne({ workspaceId, userId: socket.userId }).select(
+        'role'
+      );
+      const hasProjectScopedAccess =
+        !member &&
+        (await ProjectMember.exists({
+          workspaceId,
+          userId: socket.userId,
+        }));
       if (
         (!member && !hasProjectScopedAccess) ||
         (member && !hasPermission(member.role, WORKSPACE_PERMISSION.VIEW_CHAT))

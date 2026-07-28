@@ -6,10 +6,7 @@ import { TaskComment } from '../../models/task-comment/taskComment.model.js';
 import { Project } from '../../models/project/project.model.js';
 import { Workspace } from '../../models/workspace/workspace.model.js';
 import { DEFAULT_BOARD_COLUMNS } from '../../constants/defaultBoardColumns.js';
-import {
-  populateBoard,
-  findPopulatedBoardOrThrow,
-} from './board.helpers.js';
+import { populateBoard, findPopulatedBoardOrThrow } from './board.helpers.js';
 
 const touchProjectAndWorkspaceActivity = async (workspaceId, projectId) => {
   const now = new Date();
@@ -27,16 +24,8 @@ const syncTaskCounts = async (workspaceId, projectId, session) => {
   ]);
 
   await Promise.all([
-    Project.findByIdAndUpdate(
-      projectId,
-      { taskCount: projectTaskCount },
-      { session }
-    ),
-    Workspace.findByIdAndUpdate(
-      workspaceId,
-      { taskCount: workspaceTaskCount },
-      { session }
-    ),
+    Project.findByIdAndUpdate(projectId, { taskCount: projectTaskCount }, { session }),
+    Workspace.findByIdAndUpdate(workspaceId, { taskCount: workspaceTaskCount }, { session }),
   ]);
 };
 
@@ -81,11 +70,7 @@ export const boardService = {
 
     await touchProjectAndWorkspaceActivity(workspace._id, project._id);
 
-    return findPopulatedBoardOrThrow(
-      board._id,
-      project._id,
-      workspace._id
-    );
+    return findPopulatedBoardOrThrow(board._id, project._id, workspace._id);
   },
 
   async list(project, { page = 1, limit = 10, search }) {
@@ -101,9 +86,7 @@ export const boardService = {
     const skip = (page - 1) * limit;
 
     const [boards, total] = await Promise.all([
-      populateBoard(
-        Board.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit)
-      ),
+      populateBoard(Board.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit)),
       Board.countDocuments(filter),
     ]);
 
@@ -119,11 +102,7 @@ export const boardService = {
   },
 
   async getById(workspace, project, boardId) {
-    return findPopulatedBoardOrThrow(
-      boardId,
-      project._id,
-      workspace._id
-    );
+    return findPopulatedBoardOrThrow(boardId, project._id, workspace._id);
   },
 
   async update(workspace, project, board, data, userId) {
@@ -140,11 +119,7 @@ export const boardService = {
     await board.save();
     await touchProjectAndWorkspaceActivity(workspace._id, project._id);
 
-    return findPopulatedBoardOrThrow(
-      board._id,
-      project._id,
-      workspace._id
-    );
+    return findPopulatedBoardOrThrow(board._id, project._id, workspace._id);
   },
 
   async delete(workspace, project, board) {

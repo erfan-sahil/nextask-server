@@ -12,15 +12,11 @@ export const populateWorkspaceInvitation = (query) =>
     .populate('acceptedBy', USER_POPULATE_FIELDS);
 
 export const findInvitationByToken = (token) =>
-  WorkspaceInvitation.findOne({ token: hashInvitationToken(token) }).select(
-    '+token'
-  );
+  WorkspaceInvitation.findOne({ token: hashInvitationToken(token) }).select('+token');
 
 export const findPopulatedInvitationByToken = (token) =>
   populateWorkspaceInvitation(
-    WorkspaceInvitation.findOne({ token: hashInvitationToken(token) }).select(
-      '+token'
-    )
+    WorkspaceInvitation.findOne({ token: hashInvitationToken(token) }).select('+token')
   );
 
 export const assertInvitationPending = async (invitation) => {
@@ -49,9 +45,7 @@ export const assertInvitationPending = async (invitation) => {
 };
 
 export const findPopulatedInvitationOrThrow = async (invitationId) => {
-  const invitation = await populateWorkspaceInvitation(
-    WorkspaceInvitation.findById(invitationId)
-  );
+  const invitation = await populateWorkspaceInvitation(WorkspaceInvitation.findById(invitationId));
 
   if (!invitation) {
     throw ApiError.notFound(WORKSPACE_INVITATION_MESSAGES.NOT_FOUND);

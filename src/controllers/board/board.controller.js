@@ -4,16 +4,9 @@ import { ApiResponse } from '../../utils/ApiResponse.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 
 export const createBoard = asyncHandler(async (req, res) => {
-  const board = await boardService.create(
-    req.workspace,
-    req.project,
-    req.body,
-    req.user._id
-  );
+  const board = await boardService.create(req.workspace, req.project, req.body, req.user._id);
 
-  res
-    .status(201)
-    .json(ApiResponse.created({ board }, BOARD_MESSAGES.CREATED));
+  res.status(201).json(ApiResponse.created({ board }, BOARD_MESSAGES.CREATED));
 });
 
 export const listBoards = asyncHandler(async (req, res) => {
@@ -23,11 +16,7 @@ export const listBoards = asyncHandler(async (req, res) => {
 });
 
 export const getBoard = asyncHandler(async (req, res) => {
-  const board = await boardService.getById(
-    req.workspace,
-    req.project,
-    req.params.boardId
-  );
+  const board = await boardService.getById(req.workspace, req.project, req.params.boardId);
 
   res.json(ApiResponse.ok({ board }, BOARD_MESSAGES.FETCHED));
 });

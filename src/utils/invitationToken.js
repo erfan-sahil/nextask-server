@@ -12,8 +12,5 @@ export const compareInvitationToken = (token, hashedToken) => {
 
   if (candidateHash.length !== hashedToken.length) return false;
 
-  return crypto.timingSafeEqual(
-    Buffer.from(candidateHash),
-    Buffer.from(hashedToken)
-  );
+  return crypto.timingSafeEqual(Buffer.from(candidateHash), Buffer.from(hashedToken));
 };

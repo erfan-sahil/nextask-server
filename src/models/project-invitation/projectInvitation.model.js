@@ -71,7 +71,4 @@ const projectInvitationSchema = new mongoose.Schema(
 
 projectInvitationSchema.index({ projectId: 1, email: 1 }, { unique: true });
 
-export const ProjectInvitation = mongoose.model(
-  'ProjectInvitation',
-  projectInvitationSchema
-);
+export const ProjectInvitation = mongoose.model('ProjectInvitation', projectInvitationSchema);

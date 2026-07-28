@@ -25,12 +25,7 @@ router.use(loadProjectContext);
 
 router.post('/', validate(inviteProjectMemberSchema), inviteProjectMember);
 
-router.get(
-  '/',
-  validate(listProjectMembersSchema),
-  requireProjectMemberView,
-  listProjectMembers
-);
+router.get('/', validate(listProjectMembersSchema), requireProjectMemberView, listProjectMembers);
 
 router.get(
   '/:memberId',

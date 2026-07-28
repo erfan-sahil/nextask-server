@@ -17,19 +17,11 @@ export const requireWorkspaceAccess = asyncHandler(async (req, _res, next) => {
 });
 
 export const requireWorkspaceUpdate = asyncHandler(async (req, _res, next) => {
-  req.membership = await ensureCanUpdateWorkspaceAccess(
-    req.workspace,
-    req.user._id
-  );
+  req.membership = await ensureCanUpdateWorkspaceAccess(req.workspace, req.user._id);
   next();
 });
 
-export const requireWorkspaceOwnerForDelete = asyncHandler(
-  async (req, _res, next) => {
-    req.membership = await ensureWorkspaceOwnerForDelete(
-      req.workspace,
-      req.user._id
-    );
-    next();
-  }
-);
+export const requireWorkspaceOwnerForDelete = asyncHandler(async (req, _res, next) => {
+  req.membership = await ensureWorkspaceOwnerForDelete(req.workspace, req.user._id);
+  next();
+});

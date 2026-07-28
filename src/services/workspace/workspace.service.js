@@ -30,10 +30,7 @@ import { projectInvitationService } from '../project-invitation/projectInvitatio
 
 const attachMembershipToWorkspaces = (workspaces, memberships) => {
   const membershipByWorkspaceId = new Map(
-    memberships.map((membership) => [
-      membership.workspaceId.toString(),
-      membership,
-    ])
+    memberships.map((membership) => [membership.workspaceId.toString(), membership])
   );
 
   return workspaces.map((workspace) => {
@@ -91,11 +88,7 @@ export const workspaceService = {
         { session }
       );
 
-      await workspaceMemberService.createOwnerMember(
-        workspace._id,
-        ownerId,
-        session
-      );
+      await workspaceMemberService.createOwnerMember(workspace._id, ownerId, session);
 
       await session.commitTransaction();
     } catch (error) {
@@ -167,10 +160,7 @@ export const workspaceService = {
 
     const [workspaces, total] = await Promise.all([
       populateWorkspace(
-        Workspace.find(filter)
-          .sort({ lastActivityAt: -1, createdAt: -1 })
-          .skip(skip)
-          .limit(limit)
+        Workspace.find(filter).sort({ lastActivityAt: -1, createdAt: -1 }).skip(skip).limit(limit)
       ),
       Workspace.countDocuments(filter),
     ]);
@@ -248,12 +238,8 @@ export const workspaceService = {
       await projectMemberService.deleteByWorkspace(workspace._id, session);
       await projectInvitationService.deleteByWorkspace(workspace._id, session);
       await Notification.deleteMany({ workspaceId: workspace._id }).session(session);
-      await WorkspaceChatMessage.deleteMany({ workspaceId: workspace._id }).session(
-        session
-      );
-      await TaskComment.deleteMany({ workspaceId: workspace._id }).session(
-        session
-      );
+      await WorkspaceChatMessage.deleteMany({ workspaceId: workspace._id }).session(session);
+      await TaskComment.deleteMany({ workspaceId: workspace._id }).session(session);
       await Task.deleteMany({ workspaceId: workspace._id }).session(session);
       await Column.deleteMany({
         boardId: {

@@ -16,9 +16,7 @@ import {
 } from './workspaceMember.helpers.js';
 
 const syncWorkspaceMemberCount = async (workspaceId, session = null) => {
-  const count = await WorkspaceMember.countDocuments({ workspaceId }).session(
-    session
-  );
+  const count = await WorkspaceMember.countDocuments({ workspaceId }).session(session);
 
   await Workspace.findByIdAndUpdate(
     workspaceId,
@@ -87,10 +85,7 @@ export const workspaceMemberService = {
 
     const [members, total] = await Promise.all([
       populateWorkspaceMember(
-        WorkspaceMember.find(filter)
-          .sort({ joinedAt: -1 })
-          .skip(skip)
-          .limit(limit)
+        WorkspaceMember.find(filter).sort({ joinedAt: -1 }).skip(skip).limit(limit)
       ),
       WorkspaceMember.countDocuments(filter),
     ]);
@@ -111,10 +106,7 @@ export const workspaceMemberService = {
   },
 
   async update(workspace, member, data, actorUserId) {
-    const actorMembership = await findActorMembershipOrThrow(
-      workspace._id,
-      actorUserId
-    );
+    const actorMembership = await findActorMembershipOrThrow(workspace._id, actorUserId);
 
     ensureNotSelfRoleUpdate(actorMembership, member);
     ensureCanManageTargetMember(actorMembership, member);
@@ -139,10 +131,7 @@ export const workspaceMemberService = {
   },
 
   async remove(workspace, member, actorUserId) {
-    const actorMembership = await findActorMembershipOrThrow(
-      workspace._id,
-      actorUserId
-    );
+    const actorMembership = await findActorMembershipOrThrow(workspace._id, actorUserId);
 
     const isSelf = member.userId.toString() === actorUserId.toString();
 

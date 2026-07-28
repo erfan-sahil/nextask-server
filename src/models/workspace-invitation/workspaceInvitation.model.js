@@ -65,7 +65,4 @@ const workspaceInvitationSchema = new mongoose.Schema(
 
 workspaceInvitationSchema.index({ workspaceId: 1, email: 1 }, { unique: true });
 
-export const WorkspaceInvitation = mongoose.model(
-  'WorkspaceInvitation',
-  workspaceInvitationSchema
-);
+export const WorkspaceInvitation = mongoose.model('WorkspaceInvitation', workspaceInvitationSchema);

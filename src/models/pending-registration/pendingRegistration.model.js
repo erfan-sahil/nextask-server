@@ -56,10 +56,7 @@ const pendingRegistrationSchema = new mongoose.Schema(
   }
 );
 
-pendingRegistrationSchema.index(
-  { emailVerificationExpires: 1 },
-  { expireAfterSeconds: 0 }
-);
+pendingRegistrationSchema.index({ emailVerificationExpires: 1 }, { expireAfterSeconds: 0 });
 
 pendingRegistrationSchema.pre('save', async function hashPassword(next) {
   if (!this.isModified('password')) return next();
@@ -68,13 +65,8 @@ pendingRegistrationSchema.pre('save', async function hashPassword(next) {
   next();
 });
 
-pendingRegistrationSchema.methods.comparePassword = async function comparePassword(
-  candidate
-) {
+pendingRegistrationSchema.methods.comparePassword = async function comparePassword(candidate) {
   return bcrypt.compare(candidate, this.password);
 };
 
-export const PendingRegistration = mongoose.model(
-  'PendingRegistration',
-  pendingRegistrationSchema
-);
+export const PendingRegistration = mongoose.model('PendingRegistration', pendingRegistrationSchema);

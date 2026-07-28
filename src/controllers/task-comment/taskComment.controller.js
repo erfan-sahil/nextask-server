@@ -17,7 +17,7 @@ export const createTaskComment = asyncHandler(async (req, res) => {
 
   const mentionedUserIds = await notificationService.mentionedUserIds(
     req.workspace._id,
-    comment.content,
+    comment.content
   );
   await Promise.all([
     notificationService.createMany({
@@ -39,9 +39,7 @@ export const createTaskComment = asyncHandler(async (req, res) => {
       commentId: comment._id,
     }),
   ]);
-  res
-    .status(201)
-    .json(ApiResponse.created({ comment }, TASK_COMMENT_MESSAGES.CREATED));
+  res.status(201).json(ApiResponse.created({ comment }, TASK_COMMENT_MESSAGES.CREATED));
 });
 
 export const listTaskComments = asyncHandler(async (req, res) => {
@@ -51,10 +49,7 @@ export const listTaskComments = asyncHandler(async (req, res) => {
 });
 
 export const getTaskComment = asyncHandler(async (req, res) => {
-  const comment = await taskCommentService.getById(
-    req.task,
-    req.params.commentId
-  );
+  const comment = await taskCommentService.getById(req.task, req.params.commentId);
 
   res.json(ApiResponse.ok({ comment }, TASK_COMMENT_MESSAGES.FETCHED));
 });

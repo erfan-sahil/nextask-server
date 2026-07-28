@@ -1,10 +1,7 @@
 import { z } from 'zod';
 import { WORKSPACE_MEMBER_ROLE } from '../../constants/workspaceMemberRole.js';
 import { PROJECT_MEMBER_MESSAGES } from '../../constants/projectMemberMessages.js';
-import {
-  objectIdSchema,
-  paginationQuerySchema,
-} from '../common/common.validation.js';
+import { objectIdSchema, paginationQuerySchema } from '../common/common.validation.js';
 
 const projectParamsSchema = z.object({
   workspaceId: objectIdSchema,
@@ -56,10 +53,6 @@ export const listProjectMembersSchema = z.object({
   query: z.object({
     ...paginationQuerySchema,
     role: memberRoleSchema.optional(),
-    search: z
-      .string()
-      .trim()
-      .max(100, 'Search query cannot exceed 100 characters')
-      .optional(),
+    search: z.string().trim().max(100, 'Search query cannot exceed 100 characters').optional(),
   }),
 });

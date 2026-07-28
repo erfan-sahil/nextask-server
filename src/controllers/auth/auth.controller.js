@@ -9,9 +9,7 @@ export const register = asyncHandler(async (req, res) => {
     ? 'Registration started. Please check your email for the verification code.'
     : 'We could not send the verification email. Please try registering again.';
 
-  res.status(201).json(
-    ApiResponse.created({ email, verificationEmailSent }, message)
-  );
+  res.status(201).json(ApiResponse.created({ email, verificationEmailSent }, message));
 });
 
 export const login = asyncHandler(async (req, res) => {
@@ -19,12 +17,7 @@ export const login = asyncHandler(async (req, res) => {
 
   authService.setTokenCookies(res, tokens);
 
-  res.json(
-    ApiResponse.ok(
-      { user, accessToken: tokens.accessToken },
-      'Login successful'
-    )
-  );
+  res.json(ApiResponse.ok({ user, accessToken: tokens.accessToken }, 'Login successful'));
 });
 
 export const refresh = asyncHandler(async (req, res) => {
@@ -35,10 +28,7 @@ export const refresh = asyncHandler(async (req, res) => {
   authService.setTokenCookies(res, tokens);
 
   res.json(
-    ApiResponse.ok(
-      { user, accessToken: tokens.accessToken },
-      'Token refreshed successfully'
-    )
+    ApiResponse.ok({ user, accessToken: tokens.accessToken }, 'Token refreshed successfully')
   );
 });
 
@@ -79,10 +69,5 @@ export const verifyEmail = asyncHandler(async (req, res) => {
 export const resendVerification = asyncHandler(async (req, res) => {
   const { email } = await authService.resendVerification(req.body.email);
 
-  res.json(
-    ApiResponse.ok(
-      { email },
-      'A new verification code has been sent to your email'
-    )
-  );
+  res.json(ApiResponse.ok({ email }, 'A new verification code has been sent to your email'));
 });

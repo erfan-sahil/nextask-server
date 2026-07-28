@@ -4,15 +4,9 @@ import { ApiResponse } from '../../utils/ApiResponse.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 
 export const createColumn = asyncHandler(async (req, res) => {
-  const column = await columnService.create(
-    req.board,
-    req.body,
-    req.user._id
-  );
+  const column = await columnService.create(req.board, req.body, req.user._id);
 
-  res
-    .status(201)
-    .json(ApiResponse.created({ column }, COLUMN_MESSAGES.CREATED));
+  res.status(201).json(ApiResponse.created({ column }, COLUMN_MESSAGES.CREATED));
 });
 
 export const listColumns = asyncHandler(async (req, res) => {

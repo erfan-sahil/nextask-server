@@ -10,7 +10,10 @@ import {
 } from '../../middlewares/workspace/workspace.middleware.js';
 import { validate } from '../../middlewares/common/validate.middleware.js';
 import { z } from 'zod';
-import { objectIdSchema, paginationQuerySchema } from '../../validations/common/common.validation.js';
+import {
+  objectIdSchema,
+  paginationQuerySchema,
+} from '../../validations/common/common.validation.js';
 import {
   ensureCanSendMessage,
   ensureCanViewChat,
@@ -27,7 +30,7 @@ router.get(
     if (!req.membership.isProjectScoped) ensureCanViewChat(req.membership);
     next();
   }),
-  listWorkspaceChatParticipants,
+  listWorkspaceChatParticipants
 );
 router.get(
   '/',
@@ -40,14 +43,16 @@ router.get(
     ensureCanViewChat(req.membership);
     next();
   }),
-  listWorkspaceChatMessages,
+  listWorkspaceChatMessages
 );
 router.post(
   '/',
-  validate(z.object({
-    params: workspaceParams,
-    body: z.object({ content: z.string().trim().min(1).max(5000) }),
-  })),
+  validate(
+    z.object({
+      params: workspaceParams,
+      body: z.object({ content: z.string().trim().min(1).max(5000) }),
+    })
+  ),
   asyncHandler(async (req, _res, next) => {
     if (req.membership.isProjectScoped) {
       next();
@@ -56,7 +61,7 @@ router.post(
     ensureCanSendMessage(req.membership);
     next();
   }),
-  createWorkspaceChatMessage,
+  createWorkspaceChatMessage
 );
 
 export default router;

@@ -31,14 +31,8 @@ export const findBoardOrThrow = async (boardId, projectId, workspaceId) => {
   return board;
 };
 
-export const findPopulatedBoardOrThrow = async (
-  boardId,
-  projectId,
-  workspaceId
-) => {
-  const board = await populateBoard(
-    Board.findOne({ _id: boardId, projectId, workspaceId })
-  );
+export const findPopulatedBoardOrThrow = async (boardId, projectId, workspaceId) => {
+  const board = await populateBoard(Board.findOne({ _id: boardId, projectId, workspaceId }));
 
   if (!board) {
     throw ApiError.notFound(BOARD_MESSAGES.NOT_FOUND);
@@ -48,41 +42,25 @@ export const findPopulatedBoardOrThrow = async (
 };
 
 export const ensureActorCanViewBoards = async (workspace, projectId, userId) => {
-  const membership = await findEffectiveProjectMembershipOrThrow(
-    workspace._id,
-    projectId,
-    userId
-  );
+  const membership = await findEffectiveProjectMembershipOrThrow(workspace._id, projectId, userId);
   ensureCanViewProject(membership);
   return membership;
 };
 
 export const ensureActorCanCreateBoard = async (workspace, projectId, userId) => {
-  const membership = await findEffectiveProjectMembershipOrThrow(
-    workspace._id,
-    projectId,
-    userId
-  );
+  const membership = await findEffectiveProjectMembershipOrThrow(workspace._id, projectId, userId);
   ensureCanCreateBoard(membership);
   return membership;
 };
 
 export const ensureActorCanUpdateBoard = async (workspace, projectId, userId) => {
-  const membership = await findEffectiveProjectMembershipOrThrow(
-    workspace._id,
-    projectId,
-    userId
-  );
+  const membership = await findEffectiveProjectMembershipOrThrow(workspace._id, projectId, userId);
   ensureCanUpdateBoard(membership);
   return membership;
 };
 
 export const ensureActorCanDeleteBoard = async (workspace, projectId, userId) => {
-  const membership = await findEffectiveProjectMembershipOrThrow(
-    workspace._id,
-    projectId,
-    userId
-  );
+  const membership = await findEffectiveProjectMembershipOrThrow(workspace._id, projectId, userId);
   ensureCanDeleteBoard(membership);
   return membership;
 };

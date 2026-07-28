@@ -6,9 +6,7 @@ import { asyncHandler } from '../../utils/asyncHandler.js';
 export const createWorkspace = asyncHandler(async (req, res) => {
   const workspace = await workspaceService.create(req.body, req.user._id);
 
-  res
-    .status(201)
-    .json(ApiResponse.created({ workspace }, WORKSPACE_MESSAGES.CREATED));
+  res.status(201).json(ApiResponse.created({ workspace }, WORKSPACE_MESSAGES.CREATED));
 });
 
 export const listWorkspaces = asyncHandler(async (req, res) => {
@@ -18,20 +16,13 @@ export const listWorkspaces = asyncHandler(async (req, res) => {
 });
 
 export const getWorkspace = asyncHandler(async (req, res) => {
-  const workspace = await workspaceService.getPopulated(
-    req.workspace._id,
-    req.user._id
-  );
+  const workspace = await workspaceService.getPopulated(req.workspace._id, req.user._id);
 
   res.json(ApiResponse.ok({ workspace }, WORKSPACE_MESSAGES.FETCHED));
 });
 
 export const updateWorkspace = asyncHandler(async (req, res) => {
-  const workspace = await workspaceService.update(
-    req.workspace,
-    req.body,
-    req.user._id
-  );
+  const workspace = await workspaceService.update(req.workspace, req.body, req.user._id);
 
   res.json(ApiResponse.ok({ workspace }, WORKSPACE_MESSAGES.UPDATED));
 });

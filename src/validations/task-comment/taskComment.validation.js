@@ -1,9 +1,6 @@
 import { z } from 'zod';
 import { TASK_COMMENT_MESSAGES } from '../../constants/taskCommentMessages.js';
-import {
-  objectIdSchema,
-  paginationQuerySchema,
-} from '../common/common.validation.js';
+import { objectIdSchema, paginationQuerySchema } from '../common/common.validation.js';
 
 const taskCommentParamsSchema = z.object({
   workspaceId: objectIdSchema,
@@ -27,11 +24,9 @@ export const updateTaskCommentSchema = z.object({
   params: taskCommentParamsSchema.extend({
     commentId: objectIdSchema,
   }),
-  body: z
-    .object({ content: contentSchema })
-    .refine((data) => Object.keys(data).length > 0, {
-      message: TASK_COMMENT_MESSAGES.UPDATE_FIELDS_REQUIRED,
-    }),
+  body: z.object({ content: contentSchema }).refine((data) => Object.keys(data).length > 0, {
+    message: TASK_COMMENT_MESSAGES.UPDATE_FIELDS_REQUIRED,
+  }),
 });
 
 export const taskCommentIdSchema = z.object({

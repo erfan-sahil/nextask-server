@@ -30,21 +30,11 @@ router.use(loadWorkspaceByWorkspaceId);
 router.use(loadProjectByProjectId);
 router.use(loadBoard);
 
-router.post(
-  '/',
-  validate(createColumnSchema),
-  requireColumnCreate,
-  createColumn
-);
+router.post('/', validate(createColumnSchema), requireColumnCreate, createColumn);
 
 router.get('/', validate(listColumnsSchema), requireColumnView, listColumns);
 
-router.get(
-  '/:columnId',
-  validate(columnIdSchema),
-  requireColumnView,
-  getColumn
-);
+router.get('/:columnId', validate(columnIdSchema), requireColumnView, getColumn);
 
 router.patch(
   '/:columnId',

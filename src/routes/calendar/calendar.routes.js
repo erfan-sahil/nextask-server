@@ -24,7 +24,17 @@ router.use(loadWorkspaceByWorkspaceId);
 
 router.get('/', validate(getCalendarSchema), requireCalendarAccess, getCalendarEvents);
 router.post('/meetings', validate(createMeetingSchema), requireMeetingCreate, createMeeting);
-router.patch('/meetings/:meetingId', validate(updateMeetingSchema), requireMeetingCreate, updateMeeting);
-router.delete('/meetings/:meetingId', validate(deleteMeetingSchema), requireMeetingCreate, deleteMeeting);
+router.patch(
+  '/meetings/:meetingId',
+  validate(updateMeetingSchema),
+  requireMeetingCreate,
+  updateMeeting
+);
+router.delete(
+  '/meetings/:meetingId',
+  validate(deleteMeetingSchema),
+  requireMeetingCreate,
+  deleteMeeting
+);
 
 export default router;

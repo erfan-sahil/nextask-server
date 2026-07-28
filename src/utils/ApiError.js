@@ -12,21 +12,11 @@ export class ApiError extends Error {
   }
 
   static badRequest(message = 'Bad request', errors = []) {
-    return new ApiError(
-      HTTP_STATUS.BAD_REQUEST,
-      message,
-      errors,
-      ERROR_CODES.BAD_REQUEST
-    );
+    return new ApiError(HTTP_STATUS.BAD_REQUEST, message, errors, ERROR_CODES.BAD_REQUEST);
   }
 
   static unauthorized(message = 'Unauthorized') {
-    return new ApiError(
-      HTTP_STATUS.UNAUTHORIZED,
-      message,
-      [],
-      ERROR_CODES.UNAUTHORIZED
-    );
+    return new ApiError(HTTP_STATUS.UNAUTHORIZED, message, [], ERROR_CODES.UNAUTHORIZED);
   }
 
   static forbidden(message = 'Forbidden') {
@@ -42,21 +32,11 @@ export class ApiError extends Error {
   }
 
   static tooManyRequests(message = 'Too many requests. Please try again later.') {
-    return new ApiError(
-      HTTP_STATUS.TOO_MANY_REQUESTS,
-      message,
-      [],
-      ERROR_CODES.TOO_MANY_REQUESTS
-    );
+    return new ApiError(HTTP_STATUS.TOO_MANY_REQUESTS, message, [], ERROR_CODES.TOO_MANY_REQUESTS);
   }
 
   static internal(message = 'Internal server error') {
-    return new ApiError(
-      HTTP_STATUS.INTERNAL_SERVER_ERROR,
-      message,
-      [],
-      ERROR_CODES.INTERNAL_ERROR
-    );
+    return new ApiError(HTTP_STATUS.INTERNAL_SERVER_ERROR, message, [], ERROR_CODES.INTERNAL_ERROR);
   }
 
   static unprocessableEntity(message = 'Validation failed', errors = []) {

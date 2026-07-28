@@ -20,12 +20,20 @@ const workspaceChatMessageSchema = new mongoose.Schema(
       required: true,
     },
   },
-  { timestamps: true, toJSON: { transform: (_doc, ret) => { delete ret.__v; return ret; } } },
+  {
+    timestamps: true,
+    toJSON: {
+      transform: (_doc, ret) => {
+        delete ret.__v;
+        return ret;
+      },
+    },
+  }
 );
 
 workspaceChatMessageSchema.index({ workspaceId: 1, createdAt: -1 });
 
 export const WorkspaceChatMessage = mongoose.model(
   'WorkspaceChatMessage',
-  workspaceChatMessageSchema,
+  workspaceChatMessageSchema
 );

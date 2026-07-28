@@ -1,10 +1,7 @@
 import { TaskComment } from '../../models/task-comment/taskComment.model.js';
 import { Project } from '../../models/project/project.model.js';
 import { Workspace } from '../../models/workspace/workspace.model.js';
-import {
-  findPopulatedTaskCommentOrThrow,
-  populateTaskComment,
-} from './taskComment.helpers.js';
+import { findPopulatedTaskCommentOrThrow, populateTaskComment } from './taskComment.helpers.js';
 
 const touchActivity = async (workspaceId, projectId) => {
   const now = new Date();
@@ -37,9 +34,7 @@ export const taskCommentService = {
     const filter = { taskId: task._id };
 
     const [comments, total] = await Promise.all([
-      populateTaskComment(
-        TaskComment.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit)
-      ),
+      populateTaskComment(TaskComment.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit)),
       TaskComment.countDocuments(filter),
     ]);
 

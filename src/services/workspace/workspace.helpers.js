@@ -146,11 +146,7 @@ export const findPopulatedWorkspaceOrThrow = async (id) => {
   return workspace;
 };
 
-export const assertWorkspaceUpdatePermissions = async (
-  workspace,
-  userId,
-  data
-) => {
+export const assertWorkspaceUpdatePermissions = async (workspace, userId, data) => {
   if (data.status === WORKSPACE_STATUS.ARCHIVED) {
     await ensureCanArchiveWorkspaceAccess(workspace, userId);
   }

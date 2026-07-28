@@ -36,12 +36,7 @@ router.post('/login', validate(loginSchema), login);
 router.post('/refresh', refresh);
 router.post('/logout', authenticate, logout);
 router.get('/me', authenticate, getMe);
-router.post(
-  '/verify-email',
-  verificationRateLimit,
-  validate(verifyEmailSchema),
-  verifyEmail
-);
+router.post('/verify-email', verificationRateLimit, validate(verifyEmailSchema), verifyEmail);
 router.post(
   '/resend-verification',
   verificationRateLimit,

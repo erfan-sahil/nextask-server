@@ -51,9 +51,6 @@ export const requireColumnDelete = asyncHandler(async (req, _res, next) => {
 });
 
 export const loadColumn = asyncHandler(async (req, _res, next) => {
-  req.column = await findColumnOrThrow(
-    req.params.columnId,
-    req.board._id
-  );
+  req.column = await findColumnOrThrow(req.params.columnId, req.board._id);
   next();
 });

@@ -13,15 +13,11 @@ export const populateProjectInvitation = (query) =>
     .populate('acceptedBy', USER_POPULATE_FIELDS);
 
 export const findInvitationByToken = (token) =>
-  ProjectInvitation.findOne({ token: hashInvitationToken(token) }).select(
-    '+token'
-  );
+  ProjectInvitation.findOne({ token: hashInvitationToken(token) }).select('+token');
 
 export const findPopulatedInvitationByToken = (token) =>
   populateProjectInvitation(
-    ProjectInvitation.findOne({ token: hashInvitationToken(token) }).select(
-      '+token'
-    )
+    ProjectInvitation.findOne({ token: hashInvitationToken(token) }).select('+token')
   );
 
 export const assertInvitationPending = async (invitation) => {
@@ -50,9 +46,7 @@ export const assertInvitationPending = async (invitation) => {
 };
 
 export const findPopulatedInvitationOrThrow = async (invitationId) => {
-  const invitation = await populateProjectInvitation(
-    ProjectInvitation.findById(invitationId)
-  );
+  const invitation = await populateProjectInvitation(ProjectInvitation.findById(invitationId));
 
   if (!invitation) {
     throw ApiError.notFound(PROJECT_INVITATION_MESSAGES.NOT_FOUND);

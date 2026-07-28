@@ -10,10 +10,7 @@ const usernameSchema = z
   .string()
   .min(3, 'Username must be at least 3 characters')
   .max(30, 'Username must be at most 30 characters')
-  .regex(
-    /^[a-z0-9_]+$/,
-    'Username may only contain lowercase letters, numbers, and underscores'
-  );
+  .regex(/^[a-z0-9_]+$/, 'Username may only contain lowercase letters, numbers, and underscores');
 
 export const registerSchema = z.object({
   body: z.object({

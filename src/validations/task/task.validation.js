@@ -1,10 +1,7 @@
 import { z } from 'zod';
 import { TASK_PRIORITY } from '../../constants/taskPriority.js';
 import { TASK_MESSAGES } from '../../constants/taskMessages.js';
-import {
-  objectIdSchema,
-  paginationQuerySchema,
-} from '../common/common.validation.js';
+import { objectIdSchema, paginationQuerySchema } from '../common/common.validation.js';
 
 const boardTaskParamsSchema = z.object({
   workspaceId: objectIdSchema,
@@ -36,11 +33,7 @@ const taskFieldsSchema = {
     .min(1, 'Task title is required')
     .max(500, 'Task title cannot exceed 500 characters')
     .trim(),
-  details: z
-    .string()
-    .max(10000, 'Task details cannot exceed 10000 characters')
-    .trim()
-    .optional(),
+  details: z.string().max(10000, 'Task details cannot exceed 10000 characters').trim().optional(),
   priority: z.enum(Object.values(TASK_PRIORITY), {
     message: `Priority must be one of: ${Object.values(TASK_PRIORITY).join(', ')}`,
   }),
@@ -51,11 +44,7 @@ const taskFieldsSchema = {
   dueDate: dateSchema,
   labels: z
     .array(
-      z
-        .string()
-        .trim()
-        .min(1, 'Label cannot be empty')
-        .max(50, 'Label cannot exceed 50 characters')
+      z.string().trim().min(1, 'Label cannot be empty').max(50, 'Label cannot exceed 50 characters')
     )
     .optional(),
   completedAt: dateSchema,
@@ -110,10 +99,6 @@ export const listTasksSchema = z.object({
     columnId: objectIdSchema.optional(),
     priority: taskFieldsSchema.priority.optional(),
     assignee: objectIdSchema.optional(),
-    search: z
-      .string()
-      .trim()
-      .max(100, 'Search query cannot exceed 100 characters')
-      .optional(),
+    search: z.string().trim().max(100, 'Search query cannot exceed 100 characters').optional(),
   }),
 });

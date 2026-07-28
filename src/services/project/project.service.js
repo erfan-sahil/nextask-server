@@ -111,10 +111,7 @@ export const projectService = {
 
     const [projects, total] = await Promise.all([
       populateProject(
-        Project.find(filter)
-          .sort({ lastActivityAt: -1, createdAt: -1 })
-          .skip(skip)
-          .limit(limit)
+        Project.find(filter).sort({ lastActivityAt: -1, createdAt: -1 }).skip(skip).limit(limit)
       ),
       Project.countDocuments(filter),
     ]);
@@ -135,10 +132,8 @@ export const projectService = {
   },
 
   async update(workspace, project, data, userId) {
-    const startDate =
-      data.startDate !== undefined ? data.startDate : project.startDate;
-    const endDate =
-      data.endDate !== undefined ? data.endDate : project.endDate;
+    const startDate = data.startDate !== undefined ? data.startDate : project.startDate;
+    const endDate = data.endDate !== undefined ? data.endDate : project.endDate;
 
     assertValidDateRange(startDate, endDate);
 

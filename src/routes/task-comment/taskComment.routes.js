@@ -26,26 +26,11 @@ const router = Router({ mergeParams: true });
 
 router.use(loadCommentTask);
 
-router.post(
-  '/',
-  validate(createTaskCommentSchema),
-  requireTaskCommentCreate,
-  createTaskComment
-);
+router.post('/', validate(createTaskCommentSchema), requireTaskCommentCreate, createTaskComment);
 
-router.get(
-  '/',
-  validate(listTaskCommentsSchema),
-  requireTaskView,
-  listTaskComments
-);
+router.get('/', validate(listTaskCommentsSchema), requireTaskView, listTaskComments);
 
-router.get(
-  '/:commentId',
-  validate(taskCommentIdSchema),
-  requireTaskView,
-  getTaskComment
-);
+router.get('/:commentId', validate(taskCommentIdSchema), requireTaskView, getTaskComment);
 
 router.patch(
   '/:commentId',

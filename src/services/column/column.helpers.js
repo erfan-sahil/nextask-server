@@ -10,9 +10,7 @@ import {
 } from '../board/board.helpers.js';
 
 export const populateColumn = (query) =>
-  query
-    .populate('createdBy', USER_POPULATE_FIELDS)
-    .populate('boardId', 'name');
+  query.populate('createdBy', USER_POPULATE_FIELDS).populate('boardId', 'name');
 
 export const findColumnOrThrow = async (columnId, boardId) => {
   const column = await Column.findOne({ _id: columnId, boardId });
@@ -25,9 +23,7 @@ export const findColumnOrThrow = async (columnId, boardId) => {
 };
 
 export const findPopulatedColumnOrThrow = async (columnId, boardId) => {
-  const column = await populateColumn(
-    Column.findOne({ _id: columnId, boardId })
-  );
+  const column = await populateColumn(Column.findOne({ _id: columnId, boardId }));
 
   if (!column) {
     throw ApiError.notFound(COLUMN_MESSAGES.NOT_FOUND);
@@ -36,10 +32,7 @@ export const findPopulatedColumnOrThrow = async (columnId, boardId) => {
   return column;
 };
 
-export const ensureNoOtherCompletedColumn = async (
-  boardId,
-  excludeColumnId = null
-) => {
+export const ensureNoOtherCompletedColumn = async (boardId, excludeColumnId = null) => {
   const filter = { boardId, isCompletedColumn: true };
 
   if (excludeColumnId) {

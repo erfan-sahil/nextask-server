@@ -2,10 +2,7 @@ import { z } from 'zod';
 import { GOAL_PRIORITY } from '../../constants/goalPriority.js';
 import { GOAL_STATUS } from '../../constants/goalStatus.js';
 import { GOAL_MESSAGES } from '../../constants/goalMessages.js';
-import {
-  objectIdSchema,
-  paginationQuerySchema,
-} from '../common/common.validation.js';
+import { objectIdSchema, paginationQuerySchema } from '../common/common.validation.js';
 
 const workspaceIdParamSchema = z.object({
   workspaceId: objectIdSchema,
@@ -35,11 +32,7 @@ const goalFieldsSchema = {
     .min(1, 'Goal title is required')
     .max(500, 'Goal title cannot exceed 500 characters')
     .trim(),
-  details: z
-    .string()
-    .max(10000, 'Goal details cannot exceed 10000 characters')
-    .trim()
-    .optional(),
+  details: z.string().max(10000, 'Goal details cannot exceed 10000 characters').trim().optional(),
   status: z.enum(Object.values(GOAL_STATUS), {
     message: `Status must be one of: ${Object.values(GOAL_STATUS).join(', ')}`,
   }),
@@ -108,10 +101,6 @@ export const listGoalsSchema = z.object({
     ...paginationQuerySchema,
     status: goalFieldsSchema.status.optional(),
     priority: goalFieldsSchema.priority.optional(),
-    search: z
-      .string()
-      .trim()
-      .max(100, 'Search query cannot exceed 100 characters')
-      .optional(),
+    search: z.string().trim().max(100, 'Search query cannot exceed 100 characters').optional(),
   }),
 });

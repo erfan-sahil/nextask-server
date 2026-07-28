@@ -30,39 +30,17 @@ const router = Router({ mergeParams: true });
 router.use(loadWorkspaceByWorkspaceId);
 router.use(loadProjectByProjectId);
 
-router.post(
-  '/',
-  validate(createBoardSchema),
-  requireBoardCreate,
-  createBoard
-);
+router.post('/', validate(createBoardSchema), requireBoardCreate, createBoard);
 
 router.get('/', validate(listBoardsSchema), requireBoardView, listBoards);
 
 router.use('/:boardId/columns', columnRoutes);
 router.use('/:boardId/tasks', taskRoutes);
 
-router.get(
-  '/:boardId',
-  validate(boardIdSchema),
-  requireBoardView,
-  getBoard
-);
+router.get('/:boardId', validate(boardIdSchema), requireBoardView, getBoard);
 
-router.patch(
-  '/:boardId',
-  validate(updateBoardSchema),
-  requireBoardUpdate,
-  loadBoard,
-  updateBoard
-);
+router.patch('/:boardId', validate(updateBoardSchema), requireBoardUpdate, loadBoard, updateBoard);
 
-router.delete(
-  '/:boardId',
-  validate(boardIdSchema),
-  requireBoardDelete,
-  loadBoard,
-  deleteBoard
-);
+router.delete('/:boardId', validate(boardIdSchema), requireBoardDelete, loadBoard, deleteBoard);
 
 export default router;
