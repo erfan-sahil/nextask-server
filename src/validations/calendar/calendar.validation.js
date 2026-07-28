@@ -6,6 +6,10 @@ const workspaceIdParamSchema = z.object({
   workspaceId: objectIdSchema,
 });
 
+const meetingIdParamSchema = workspaceIdParamSchema.extend({
+  meetingId: objectIdSchema,
+});
+
 const dateSchema = z
   .union([
     z.string().datetime({ message: 'Invalid date format' }),
@@ -44,4 +48,28 @@ export const createMeetingSchema = z.object({
     location: z.string().max(500, 'Location cannot exceed 500 characters').trim().optional(),
     attendeeIds: z.array(objectIdSchema).max(100).optional(),
   }),
+});
+
+export const updateMeetingSchema = z.object({
+  params: meetingIdParamSchema,
+  body: z
+    .object({
+      title: z
+        .string()
+        .min(1, 'Meeting title is required')
+        .max(500, 'Meeting title cannot exceed 500 characters')
+        .trim()
+        .optional(),
+      message: z.string().max(10000, 'Message cannot exceed 10000 characters').trim().optional(),
+      startsAt: dateSchema.optional(),
+      location: z.string().max(500, 'Location cannot exceed 500 characters').trim().optional(),
+      attendeeIds: z.array(objectIdSchema).max(100).optional(),
+    })
+    .refine((data) => Object.keys(data).length > 0, {
+      message: 'At least one meeting field is required',
+    }),
+});
+
+export const deleteMeetingSchema = z.object({
+  params: meetingIdParamSchema,
 });

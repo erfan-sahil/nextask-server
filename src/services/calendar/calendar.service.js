@@ -121,4 +121,42 @@ export const calendarService = {
 
     return meeting;
   },
+
+  async updateMeeting(workspace, meetingId, data) {
+    const update = { ...data };
+
+    if (data.attendeeIds) {
+      const memberCount = await WorkspaceMember.countDocuments({
+        workspaceId: workspace._id,
+        userId: { $in: data.attendeeIds },
+      });
+
+      if (memberCount !== data.attendeeIds.length) {
+        throw ApiError.badRequest(CALENDAR_MESSAGES.INVALID_ATTENDEES);
+      }
+    }
+
+    const meeting = await Meeting.findOneAndUpdate(
+      { _id: meetingId, workspaceId: workspace._id },
+      update,
+      { new: true, runValidators: true }
+    );
+
+    if (!meeting) {
+      throw ApiError.notFound(CALENDAR_MESSAGES.MEETING_NOT_FOUND);
+    }
+
+    return meeting;
+  },
+
+  async deleteMeeting(workspace, meetingId) {
+    const meeting = await Meeting.findOneAndDelete({
+      _id: meetingId,
+      workspaceId: workspace._id,
+    });
+
+    if (!meeting) {
+      throw ApiError.notFound(CALENDAR_MESSAGES.MEETING_NOT_FOUND);
+    }
+  },
 };

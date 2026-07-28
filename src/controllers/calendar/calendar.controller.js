@@ -19,3 +19,19 @@ export const createMeeting = asyncHandler(async (req, res) => {
 
   res.status(201).json(ApiResponse.created({ meeting }, CALENDAR_MESSAGES.MEETING_CREATED));
 });
+
+export const updateMeeting = asyncHandler(async (req, res) => {
+  const meeting = await calendarService.updateMeeting(
+    req.workspace,
+    req.params.meetingId,
+    req.body
+  );
+
+  res.json(ApiResponse.ok({ meeting }, CALENDAR_MESSAGES.MEETING_UPDATED));
+});
+
+export const deleteMeeting = asyncHandler(async (req, res) => {
+  await calendarService.deleteMeeting(req.workspace, req.params.meetingId);
+
+  res.json(ApiResponse.ok(null, CALENDAR_MESSAGES.MEETING_DELETED));
+});
