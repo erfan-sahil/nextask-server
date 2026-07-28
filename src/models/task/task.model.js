@@ -115,5 +115,6 @@ const taskSchema = new mongoose.Schema(
 
 taskSchema.index({ boardId: 1, columnId: 1, position: 1 });
 taskSchema.index({ projectId: 1, lastActivityAt: -1 });
+taskSchema.index({ workspaceId: 1, assignees: 1, dueDate: 1 });
 
 export const Task = mongoose.model('Task', taskSchema);
