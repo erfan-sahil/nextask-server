@@ -8,6 +8,9 @@ import {
   getMe,
   verifyEmail,
   resendVerification,
+  updateProfile,
+  changePassword,
+  deleteAccount,
 } from '../../controllers/auth/auth.controller.js';
 import { authenticate } from '../../middlewares/auth/auth.middleware.js';
 import { validate } from '../../middlewares/common/validate.middleware.js';
@@ -17,6 +20,9 @@ import {
   loginSchema,
   verifyEmailSchema,
   resendVerificationSchema,
+  updateProfileSchema,
+  changePasswordSchema,
+  deleteAccountSchema,
 } from '../../validations/auth/auth.validation.js';
 
 const router = Router();
@@ -36,6 +42,9 @@ router.post('/login', validate(loginSchema), login);
 router.post('/refresh', refresh);
 router.post('/logout', authenticate, logout);
 router.get('/me', authenticate, getMe);
+router.patch('/profile', authenticate, validate(updateProfileSchema), updateProfile);
+router.patch('/password', authenticate, validate(changePasswordSchema), changePassword);
+router.delete('/account', authenticate, validate(deleteAccountSchema), deleteAccount);
 router.post('/verify-email', verificationRateLimit, validate(verifyEmailSchema), verifyEmail);
 router.post(
   '/resend-verification',

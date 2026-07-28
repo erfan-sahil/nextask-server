@@ -351,5 +351,62 @@ export const authService = {
     clearTokenCookies(res);
   },
 
+  async updateProfile(userId, { firstName, lastName, username }) {
+    const normalizedUsername = username.toLowerCase().trim();
+    const usernameInUse = await User.exists({
+      _id: { $ne: userId },
+      username: normalizedUsername,
+    });
+
+    if (usernameInUse) {
+      throw ApiError.conflict('Username already taken');
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        username: normalizedUsername,
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!user) {
+      throw ApiError.notFound('User not found');
+    }
+
+    return user;
+  },
+
+  async changePassword(userId, { currentPassword, newPassword }) {
+    const user = await User.findById(userId).select('+password');
+
+    if (!user || !(await user.comparePassword(currentPassword))) {
+      throw ApiError.unauthorized('Current password is incorrect');
+    }
+
+    if (await user.comparePassword(newPassword)) {
+      throw ApiError.badRequest('New password must be different from your current password');
+    }
+
+    user.password = newPassword;
+    user.refreshToken = null;
+    await user.save();
+
+    return user;
+  },
+
+  async deleteAccount(userId, currentPassword, res) {
+    const user = await User.findById(userId).select('+password');
+
+    if (!user || !(await user.comparePassword(currentPassword))) {
+      throw ApiError.unauthorized('Current password is incorrect');
+    }
+
+    await User.findByIdAndDelete(userId);
+    clearTokenCookies(res);
+  },
+
   setTokenCookies,
 };

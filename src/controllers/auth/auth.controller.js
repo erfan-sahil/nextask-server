@@ -71,3 +71,26 @@ export const resendVerification = asyncHandler(async (req, res) => {
 
   res.json(ApiResponse.ok({ email }, 'A new verification code has been sent to your email'));
 });
+
+export const updateProfile = asyncHandler(async (req, res) => {
+  const user = await authService.updateProfile(req.user._id, req.body);
+
+  res.json(ApiResponse.ok({ user }, 'Profile updated successfully'));
+});
+
+export const changePassword = asyncHandler(async (req, res) => {
+  await authService.changePassword(req.user._id, req.body);
+
+  res.json(
+    ApiResponse.ok(
+      null,
+      'Password updated successfully. Please sign in again with your new password.'
+    )
+  );
+});
+
+export const deleteAccount = asyncHandler(async (req, res) => {
+  await authService.deleteAccount(req.user._id, req.body.currentPassword, res);
+
+  res.json(ApiResponse.ok(null, 'Account deleted successfully'));
+});
