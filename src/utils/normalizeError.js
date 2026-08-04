@@ -111,12 +111,28 @@ export const normalizeError = (err) => {
     };
   }
 
-  if (err.name === 'ValidationError') {
+  // express-rate-limit also uses name "ValidationError" — only treat Mongoose ones.
+  if (
+    err.name === 'ValidationError' &&
+    err.errors &&
+    typeof err.errors === 'object' &&
+    !String(err.code || '').startsWith('ERR_ERL_')
+  ) {
     return {
       statusCode: HTTP_STATUS.UNPROCESSABLE_ENTITY,
       message: 'Validation failed',
       errors: formatMongooseValidationErrors(err),
       errorCode: ERROR_CODES.VALIDATION_FAILED,
+      isOperational: true,
+    };
+  }
+
+  if (String(err.code || '').startsWith('ERR_ERL_')) {
+    return {
+      statusCode: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+      message: 'Rate limiter configuration error',
+      errors: [],
+      errorCode: ERROR_CODES.INTERNAL_ERROR,
       isOperational: true,
     };
   }

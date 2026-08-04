@@ -34,13 +34,25 @@ const verificationRateLimit = rateLimit({
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
   handler: (_req, _res, next) => {
     next(ApiError.tooManyRequests());
   },
 });
 
-router.post('/register', validate(registerSchema), register);
-router.post('/login', validate(loginSchema), login);
+const authWriteRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  handler: (_req, _res, next) => {
+    next(ApiError.tooManyRequests());
+  },
+});
+
+router.post('/register', authWriteRateLimit, validate(registerSchema), register);
+router.post('/login', authWriteRateLimit, validate(loginSchema), login);
 router.get('/google', googleAuth);
 router.get('/google/callback', googleAuthCallback);
 router.post('/refresh', refresh);

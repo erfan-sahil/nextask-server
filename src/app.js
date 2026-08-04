@@ -33,6 +33,12 @@ app.use(
     max: env.rateLimit.max,
     standardHeaders: true,
     legacyHeaders: false,
+    // Failed auth/validation responses should not burn the SPA budget.
+    skipFailedRequests: true,
+    // Avoid express-rate-limit ValidationError crashes behind local proxies.
+    validate: {
+      xForwardedForHeader: false,
+    },
     handler: (_req, _res, next) => {
       next(ApiError.tooManyRequests());
     },
