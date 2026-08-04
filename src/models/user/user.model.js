@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import { AUTH_PROVIDER } from '../../constants/authProvider.js';
 import { USER_STATUS } from '../../constants/userStatus.js';
 
 const userSchema = new mongoose.Schema(
@@ -30,9 +31,24 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: [true, 'Password is required'],
+      required: function requiredPassword() {
+        return (this.authProvider ?? AUTH_PROVIDER.LOCAL) === AUTH_PROVIDER.LOCAL;
+      },
       minlength: 8,
       select: false,
+      default: null,
+    },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
+      default: null,
+      select: false,
+    },
+    authProvider: {
+      type: String,
+      enum: Object.values(AUTH_PROVIDER),
+      default: AUTH_PROVIDER.LOCAL,
     },
     avatar: {
       type: String,
@@ -79,6 +95,7 @@ const userSchema = new mongoose.Schema(
       transform(_doc, ret) {
         delete ret.password;
         delete ret.refreshToken;
+        delete ret.googleId;
         delete ret.emailVerificationOtp;
         delete ret.emailVerificationExpires;
         delete ret.emailVerificationSentAt;
@@ -91,7 +108,7 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.pre('save', async function hashPassword(next) {
-  if (!this.isModified('password') || this.$locals?.skipPasswordHash) {
+  if (!this.isModified('password') || !this.password || this.$locals?.skipPasswordHash) {
     if (this.$locals?.skipPasswordHash) {
       delete this.$locals.skipPasswordHash;
     }
@@ -104,6 +121,10 @@ userSchema.pre('save', async function hashPassword(next) {
 });
 
 userSchema.methods.comparePassword = async function comparePassword(candidate) {
+  if (!this.password) {
+    return false;
+  }
+
   return bcrypt.compare(candidate, this.password);
 };
 

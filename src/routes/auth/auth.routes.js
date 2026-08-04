@@ -11,6 +11,8 @@ import {
   updateProfile,
   changePassword,
   deleteAccount,
+  googleAuth,
+  googleAuthCallback,
 } from '../../controllers/auth/auth.controller.js';
 import { authenticate } from '../../middlewares/auth/auth.middleware.js';
 import { validate } from '../../middlewares/common/validate.middleware.js';
@@ -39,6 +41,8 @@ const verificationRateLimit = rateLimit({
 
 router.post('/register', validate(registerSchema), register);
 router.post('/login', validate(loginSchema), login);
+router.get('/google', googleAuth);
+router.get('/google/callback', googleAuthCallback);
 router.post('/refresh', refresh);
 router.post('/logout', authenticate, logout);
 router.get('/me', authenticate, getMe);

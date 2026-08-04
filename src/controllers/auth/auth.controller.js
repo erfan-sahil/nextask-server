@@ -1,6 +1,8 @@
 import { authService } from '../../services/auth/auth.service.js';
+import { googleAuthService } from '../../services/auth/googleAuth.service.js';
 import { ApiResponse } from '../../utils/ApiResponse.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
+import { logger } from '../../utils/logger.js';
 
 export const register = asyncHandler(async (req, res) => {
   const { email, verificationEmailSent } = await authService.register(req.body);
@@ -93,4 +95,34 @@ export const deleteAccount = asyncHandler(async (req, res) => {
   await authService.deleteAccount(req.user._id, req.body.currentPassword, res);
 
   res.json(ApiResponse.ok(null, 'Account deleted successfully'));
+});
+
+export const googleAuth = asyncHandler(async (req, res) => {
+  const authorizationUrl = googleAuthService.getAuthorizationUrl(req.query.callbackUrl);
+  res.redirect(authorizationUrl);
+});
+
+export const googleAuthCallback = asyncHandler(async (req, res) => {
+  try {
+    const { tokens, callbackUrl } = await googleAuthService.handleCallback({
+      code: req.query.code,
+      state: req.query.state,
+      error: req.query.error,
+    });
+
+    authService.setTokenCookies(res, tokens);
+    res.redirect(googleAuthService.buildSuccessRedirect(callbackUrl));
+  } catch (error) {
+    logger.error('Google OAuth callback failed', {
+      cause: error.message,
+      statusCode: error.statusCode,
+    });
+
+    const message =
+      error.isOperational && error.message
+        ? error.message
+        : 'Google sign-in failed. Please try again.';
+
+    res.redirect(googleAuthService.buildErrorRedirect(message));
+  }
 });

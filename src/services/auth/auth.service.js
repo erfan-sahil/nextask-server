@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
+import { AUTH_PROVIDER } from '../../constants/authProvider.js';
 import { EMAIL_VERIFICATION } from '../../constants/emailVerification.js';
 import { env } from '../../config/env.js';
 import { USER_STATUS } from '../../constants/userStatus.js';
@@ -13,7 +14,7 @@ import { emailService } from '../email/email.service.js';
 const ACCESS_TOKEN_MAX_AGE_MS = 15 * 60 * 1000;
 const REFRESH_TOKEN_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
-const generateTokens = (userId) => {
+export const generateTokens = (userId) => {
   const accessToken = jwt.sign({ id: userId }, env.jwt.accessSecret, {
     expiresIn: env.jwt.accessExpiresIn,
   });
@@ -186,9 +187,19 @@ export const authService = {
       );
     }
 
-    const user = await User.findOne({ email }).select('+password +refreshToken');
+    const user = await User.findOne({ email }).select('+password +refreshToken +googleId');
 
-    if (!user || !(await user.comparePassword(password))) {
+    if (!user) {
+      throw ApiError.unauthorized('Invalid email or password');
+    }
+
+    if (!user.password) {
+      throw ApiError.unauthorized(
+        'This account uses Google sign-in. Please continue with Google.'
+      );
+    }
+
+    if (!(await user.comparePassword(password))) {
       throw ApiError.unauthorized('Invalid email or password');
     }
 
@@ -200,6 +211,7 @@ export const authService = {
     await user.save({ validateBeforeSave: false });
 
     user.password = undefined;
+    user.googleId = undefined;
     return { user, tokens };
   },
 
@@ -243,6 +255,7 @@ export const authService = {
         lastName: pendingRegistration.lastName,
         username: pendingRegistration.username,
         email: pendingRegistration.email,
+        authProvider: AUTH_PROVIDER.LOCAL,
         isEmailVerified: true,
       });
       user.password = pendingRegistration.password;
@@ -382,7 +395,17 @@ export const authService = {
   async changePassword(userId, { currentPassword, newPassword }) {
     const user = await User.findById(userId).select('+password');
 
-    if (!user || !(await user.comparePassword(currentPassword))) {
+    if (!user) {
+      throw ApiError.notFound('User not found');
+    }
+
+    if (!user.password) {
+      throw ApiError.badRequest(
+        'This account uses Google sign-in and does not have a password. Continue with Google to access your account.'
+      );
+    }
+
+    if (!(await user.comparePassword(currentPassword))) {
       throw ApiError.unauthorized('Current password is incorrect');
     }
 
@@ -400,13 +423,22 @@ export const authService = {
   async deleteAccount(userId, currentPassword, res) {
     const user = await User.findById(userId).select('+password');
 
-    if (!user || !(await user.comparePassword(currentPassword))) {
-      throw ApiError.unauthorized('Current password is incorrect');
+    if (!user) {
+      throw ApiError.notFound('User not found');
+    }
+
+    if (user.password) {
+      if (!(await user.comparePassword(currentPassword))) {
+        throw ApiError.unauthorized('Current password is incorrect');
+      }
+    } else if (user.authProvider !== AUTH_PROVIDER.GOOGLE) {
+      throw ApiError.unauthorized('Unable to delete this account');
     }
 
     await User.findByIdAndDelete(userId);
     clearTokenCookies(res);
   },
 
+  generateTokens,
   setTokenCookies,
 };

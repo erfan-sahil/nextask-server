@@ -18,6 +18,14 @@ export const env = {
 
   clientUrl: process.env.CLIENT_URL || 'http://localhost:3000',
 
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackUrl:
+      process.env.GOOGLE_CALLBACK_URL ||
+      'http://localhost:5001/api/v1/auth/google/callback',
+  },
+
   smtp: {
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT) || 587,
