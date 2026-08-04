@@ -30,6 +30,7 @@ const workspaceSchema = new mongoose.Schema(
     visibility: {
       type: String,
       enum: Object.values(WORKSPACE_VISIBILITY),
+      required: [true, 'Visibility is required'],
       default: WORKSPACE_VISIBILITY.PRIVATE,
     },
     ownerId: {

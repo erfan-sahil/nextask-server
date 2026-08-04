@@ -6,6 +6,8 @@ export const NOTIFICATION_TYPE = {
   TASK_COMMENT: 'TASK_COMMENT',
   MENTION: 'MENTION',
   CHAT_MENTION: 'CHAT_MENTION',
+  MEETING_CREATED: 'MEETING_CREATED',
+  MEETING_UPDATED: 'MEETING_UPDATED',
 };
 
 const notificationSchema = new mongoose.Schema(
@@ -27,6 +29,7 @@ const notificationSchema = new mongoose.Schema(
       ref: 'WorkspaceChatMessage',
       default: null,
     },
+    meetingId: { type: mongoose.Schema.Types.ObjectId, ref: 'Meeting', default: null },
     readAt: { type: Date, default: null },
   },
   {

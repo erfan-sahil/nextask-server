@@ -22,6 +22,7 @@ export const notificationService = {
     taskId,
     commentId,
     chatMessageId,
+    meetingId,
   }) {
     const recipients = [...new Set(recipientIds.map(String))].filter(
       (recipientId) => recipientId !== actorId.toString()
@@ -38,6 +39,7 @@ export const notificationService = {
         taskId,
         commentId,
         chatMessageId,
+        meetingId,
       }))
     );
     const notifications = await populateNotification(

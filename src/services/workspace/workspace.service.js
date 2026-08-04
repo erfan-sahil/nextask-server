@@ -7,7 +7,6 @@ import { Task } from '../../models/task/task.model.js';
 import { TaskComment } from '../../models/task-comment/taskComment.model.js';
 import { Notification } from '../../models/notification/notification.model.js';
 import { WorkspaceChatMessage } from '../../models/workspace-chat/workspaceChatMessage.model.js';
-import { WORKSPACE_VISIBILITY } from '../../constants/workspaceVisibility.js';
 import { WORKSPACE_STATUS } from '../../constants/workspaceStatus.js';
 import { WORKSPACE_MESSAGES } from '../../constants/workspaceMessages.js';
 import { ApiError } from '../../utils/ApiError.js';
@@ -74,7 +73,7 @@ export const workspaceService = {
             slug,
             description: data.description ?? '',
             logo: data.logo ?? null,
-            visibility: data.visibility ?? WORKSPACE_VISIBILITY.PRIVATE,
+            visibility: data.visibility,
             ownerId,
             status: data.status ?? WORKSPACE_STATUS.ACTIVE,
             memberCount: 1,

@@ -125,15 +125,19 @@ export const calendarService = {
   async updateMeeting(workspace, meetingId, data) {
     const update = { ...data };
 
-    if (data.attendeeIds) {
+    if (data.attendeeIds !== undefined) {
+      const attendeeIds = [...new Set(data.attendeeIds.map((attendeeId) => attendeeId.toLowerCase()))];
       const memberCount = await WorkspaceMember.countDocuments({
         workspaceId: workspace._id,
-        userId: { $in: data.attendeeIds },
+        userId: { $in: attendeeIds },
       });
 
-      if (memberCount !== data.attendeeIds.length) {
+      if (memberCount !== attendeeIds.length) {
         throw ApiError.badRequest(CALENDAR_MESSAGES.INVALID_ATTENDEES);
       }
+
+      update.attendees = attendeeIds;
+      delete update.attendeeIds;
     }
 
     const meeting = await Meeting.findOneAndUpdate(

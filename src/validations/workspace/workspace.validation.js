@@ -28,6 +28,7 @@ const workspaceFieldsSchema = {
   description: z.string().max(500, 'Description cannot exceed 500 characters').trim().optional(),
   logo: logoSchema,
   visibility: z.enum(Object.values(WORKSPACE_VISIBILITY), {
+    required_error: 'Visibility is required',
     message: `Visibility must be one of: ${Object.values(WORKSPACE_VISIBILITY).join(', ')}`,
   }),
   ownerId: objectIdSchema,
@@ -42,7 +43,7 @@ export const createWorkspaceSchema = z.object({
     slug: workspaceFieldsSchema.slug.optional(),
     description: workspaceFieldsSchema.description,
     logo: workspaceFieldsSchema.logo,
-    visibility: workspaceFieldsSchema.visibility.optional(),
+    visibility: workspaceFieldsSchema.visibility,
     ownerId: workspaceFieldsSchema.ownerId.optional(),
     status: workspaceFieldsSchema.status.optional(),
   }),
