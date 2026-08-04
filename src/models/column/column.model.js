@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { DEFAULT_COLUMN_COLOR } from '../../constants/columnMessages.js';
 
 const columnSchema = new mongoose.Schema(
   {
@@ -21,7 +22,7 @@ const columnSchema = new mongoose.Schema(
     },
     color: {
       type: String,
-      default: null,
+      default: DEFAULT_COLUMN_COLOR,
     },
     isCompletedColumn: {
       type: Boolean,

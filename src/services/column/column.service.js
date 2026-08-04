@@ -3,7 +3,10 @@ import { Column } from '../../models/column/column.model.js';
 import { Task } from '../../models/task/task.model.js';
 import { Project } from '../../models/project/project.model.js';
 import { Workspace } from '../../models/workspace/workspace.model.js';
-import { COLUMN_MESSAGES } from '../../constants/columnMessages.js';
+import {
+  COLUMN_MESSAGES,
+  DEFAULT_COLUMN_COLOR,
+} from '../../constants/columnMessages.js';
 import { ApiError } from '../../utils/ApiError.js';
 import {
   populateColumn,
@@ -43,7 +46,7 @@ export const columnService = {
             boardId: board._id,
             name: data.name,
             position: data.position,
-            color: data.color ?? null,
+            color: data.color ?? DEFAULT_COLUMN_COLOR,
             isCompletedColumn: data.isCompletedColumn ?? false,
             createdBy: userId,
           },

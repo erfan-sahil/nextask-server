@@ -1,8 +1,10 @@
+import { DEFAULT_COLUMN_COLOR } from './columnMessages.js';
+
 export const DEFAULT_BOARD_COLUMNS = [
   {
     name: 'Backlog',
     position: 0,
-    color: '#64748b',
+    color: DEFAULT_COLUMN_COLOR,
     isCompletedColumn: false,
   },
   {

@@ -20,9 +20,10 @@ export const inviteWorkspaceMemberSchema = z.object({
   params: workspaceIdParamSchema,
   body: z.object({
     email: z
-      .string({ required_error: 'Email is required' })
-      .email('Invalid email address')
+      .string({ error: 'Email is required' })
       .trim()
+      .min(1, 'Email is required')
+      .email('Invalid email address')
       .toLowerCase(),
     role: assignableMemberRoleSchema.optional(),
   }),

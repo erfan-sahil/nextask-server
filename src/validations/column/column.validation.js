@@ -1,5 +1,8 @@
 import { z } from 'zod';
-import { COLUMN_MESSAGES } from '../../constants/columnMessages.js';
+import {
+  COLUMN_MESSAGES,
+  DEFAULT_COLUMN_COLOR,
+} from '../../constants/columnMessages.js';
 import { objectIdSchema } from '../common/common.validation.js';
 
 const boardColumnParamsSchema = z.object({
@@ -8,10 +11,24 @@ const boardColumnParamsSchema = z.object({
   boardId: objectIdSchema,
 });
 
+const HEX_COLOR_REGEX = /^#[0-9A-Fa-f]{6}$/;
+
 const colorSchema = z
-  .union([z.string().max(50, 'Color cannot exceed 50 characters'), z.null()])
+  .union([
+    z
+      .string()
+      .trim()
+      .regex(HEX_COLOR_REGEX, COLUMN_MESSAGES.INVALID_COLOR)
+      .max(7, COLUMN_MESSAGES.INVALID_COLOR),
+    z.null(),
+    z.literal(''),
+  ])
   .optional()
-  .transform((value) => (value === '' ? null : value));
+  .transform((value) => {
+    if (value === undefined) return undefined;
+    if (value === '' || value === null) return DEFAULT_COLUMN_COLOR;
+    return value.toLowerCase();
+  });
 
 const positionSchema = z
   .number({ required_error: 'Position is required' })
