@@ -29,7 +29,11 @@ const projectFieldsSchema = {
     .min(1, 'Project name is required')
     .max(200, 'Project name cannot exceed 200 characters')
     .trim(),
-  description: z.string().max(2000, 'Description cannot exceed 2000 characters').trim().optional(),
+  description: z
+    .string()
+    .max(2000, 'Description cannot exceed 2000 characters')
+    .trim()
+    .optional(),
   icon: iconSchema,
   status: z.enum(Object.values(PROJECT_STATUS), {
     message: `Status must be one of: ${Object.values(PROJECT_STATUS).join(', ')}`,
