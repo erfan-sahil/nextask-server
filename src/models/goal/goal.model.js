@@ -18,7 +18,7 @@ const goalSchema = new mongoose.Schema(
     },
     details: {
       type: String,
-      default: '',
+      required: [true, 'Goal details are required'],
       trim: true,
       maxlength: 10000,
     },
@@ -32,19 +32,21 @@ const goalSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: Object.values(GOAL_STATUS),
+      required: [true, 'Status is required'],
       default: GOAL_STATUS.PLANNING,
     },
     startDate: {
       type: Date,
-      default: null,
+      required: [true, 'Start date is required'],
     },
     dueDate: {
       type: Date,
-      default: null,
+      required: [true, 'Due date is required'],
     },
     priority: {
       type: String,
       enum: Object.values(GOAL_PRIORITY),
+      required: [true, 'Priority is required'],
       default: GOAL_PRIORITY.MEDIUM,
     },
     createdBy: {

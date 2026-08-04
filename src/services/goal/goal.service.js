@@ -1,5 +1,4 @@
 import { Goal } from '../../models/goal/goal.model.js';
-import { GOAL_PRIORITY } from '../../constants/goalPriority.js';
 import { GOAL_STATUS } from '../../constants/goalStatus.js';
 import { sanitizeRichText } from '../../utils/sanitizeRichText.js';
 import { assertValidDateRange, findPopulatedGoalOrThrow, populateGoal } from './goal.helpers.js';
@@ -16,17 +15,16 @@ export const goalService = {
   async create(workspace, data, userId) {
     assertValidDateRange(data.startDate, data.dueDate);
 
-    const status = data.status ?? GOAL_STATUS.PLANNING;
     const goal = await Goal.create({
       workspaceId: workspace._id,
       title: data.title,
       details: sanitizeRichText(data.details),
-      status,
-      startDate: data.startDate ?? null,
-      dueDate: data.dueDate ?? null,
-      priority: data.priority ?? GOAL_PRIORITY.MEDIUM,
+      status: data.status,
+      startDate: data.startDate,
+      dueDate: data.dueDate,
+      priority: data.priority,
       createdBy: userId,
-      completedAt: resolveCompletedAt(status, data.completedAt),
+      completedAt: resolveCompletedAt(data.status, data.completedAt),
     });
 
     return findPopulatedGoalOrThrow(goal._id, workspace._id);

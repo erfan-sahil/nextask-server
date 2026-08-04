@@ -8,7 +8,27 @@ const workspaceIdParamSchema = z.object({
   workspaceId: objectIdSchema,
 });
 
-const dateSchema = z
+const hasRichTextContent = (value) =>
+  String(value || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim().length > 0;
+
+const requiredDateSchema = z
+  .union([
+    z.string().datetime({ message: 'Invalid date format' }),
+    z.string().regex(/^\d{4}-\d{2}-\d{2}$/, {
+      message: 'Invalid date format',
+    }),
+    z.date(),
+  ], {
+    required_error: 'Date is required',
+    invalid_type_error: 'Date is required',
+  })
+  .transform((value) => (value instanceof Date ? value : new Date(value)));
+
+const optionalNullableDateSchema = z
   .union([
     z.string().datetime({ message: 'Invalid date format' }),
     z.string().regex(/^\d{4}-\d{2}-\d{2}$/, {
@@ -32,16 +52,21 @@ const goalFieldsSchema = {
     .min(1, 'Goal title is required')
     .max(500, 'Goal title cannot exceed 500 characters')
     .trim(),
-  details: z.string().max(10000, 'Goal details cannot exceed 10000 characters').trim().optional(),
+  details: z
+    .string({ required_error: 'Goal details are required' })
+    .max(10000, 'Goal details cannot exceed 10000 characters')
+    .refine(hasRichTextContent, 'Goal details are required'),
   status: z.enum(Object.values(GOAL_STATUS), {
+    required_error: 'Status is required',
     message: `Status must be one of: ${Object.values(GOAL_STATUS).join(', ')}`,
   }),
-  startDate: dateSchema,
-  dueDate: dateSchema,
+  startDate: requiredDateSchema,
+  dueDate: requiredDateSchema,
   priority: z.enum(Object.values(GOAL_PRIORITY), {
+    required_error: 'Priority is required',
     message: `Priority must be one of: ${Object.values(GOAL_PRIORITY).join(', ')}`,
   }),
-  completedAt: dateSchema,
+  completedAt: optionalNullableDateSchema,
 };
 
 const validateDateRange = (data, ctx) => {
@@ -60,10 +85,10 @@ export const createGoalSchema = z.object({
     .object({
       title: goalFieldsSchema.title,
       details: goalFieldsSchema.details,
-      status: goalFieldsSchema.status.optional(),
+      status: goalFieldsSchema.status,
       startDate: goalFieldsSchema.startDate,
       dueDate: goalFieldsSchema.dueDate,
-      priority: goalFieldsSchema.priority.optional(),
+      priority: goalFieldsSchema.priority,
       completedAt: goalFieldsSchema.completedAt,
     })
     .superRefine(validateDateRange),
@@ -76,10 +101,10 @@ export const updateGoalSchema = z.object({
   body: z
     .object({
       title: goalFieldsSchema.title.optional(),
-      details: goalFieldsSchema.details,
+      details: goalFieldsSchema.details.optional(),
       status: goalFieldsSchema.status.optional(),
-      startDate: goalFieldsSchema.startDate,
-      dueDate: goalFieldsSchema.dueDate,
+      startDate: goalFieldsSchema.startDate.optional(),
+      dueDate: goalFieldsSchema.dueDate.optional(),
       priority: goalFieldsSchema.priority.optional(),
       completedAt: goalFieldsSchema.completedAt,
     })
