@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import { AUTH_PROVIDER } from '../../constants/authProvider.js';
 import { USER_STATUS } from '../../constants/userStatus.js';
 
 const userSchema = new mongoose.Schema(
@@ -30,9 +31,24 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: [true, 'Password is required'],
+      required: function requiredPassword() {
+        return (this.authProvider ?? AUTH_PROVIDER.LOCAL) === AUTH_PROVIDER.LOCAL;
+      },
       minlength: 8,
       select: false,
+      default: null,
+    },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
+      default: null,
+      select: false,
+    },
+    authProvider: {
+      type: String,
+      enum: Object.values(AUTH_PROVIDER),
+      default: AUTH_PROVIDER.LOCAL,
     },
     avatar: {
       type: String,
@@ -41,6 +57,23 @@ const userSchema = new mongoose.Schema(
     isEmailVerified: {
       type: Boolean,
       default: false,
+    },
+    emailVerificationOtp: {
+      type: String,
+      select: false,
+    },
+    emailVerificationExpires: {
+      type: Date,
+      select: false,
+    },
+    emailVerificationSentAt: {
+      type: Date,
+      select: false,
+    },
+    emailVerificationAttempts: {
+      type: Number,
+      default: 0,
+      select: false,
     },
     status: {
       type: String,
@@ -62,6 +95,11 @@ const userSchema = new mongoose.Schema(
       transform(_doc, ret) {
         delete ret.password;
         delete ret.refreshToken;
+        delete ret.googleId;
+        delete ret.emailVerificationOtp;
+        delete ret.emailVerificationExpires;
+        delete ret.emailVerificationSentAt;
+        delete ret.emailVerificationAttempts;
         delete ret.__v;
         return ret;
       },
@@ -70,13 +108,23 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.pre('save', async function hashPassword(next) {
-  if (!this.isModified('password')) return next();
+  if (!this.isModified('password') || !this.password || this.$locals?.skipPasswordHash) {
+    if (this.$locals?.skipPasswordHash) {
+      delete this.$locals.skipPasswordHash;
+    }
+
+    return next();
+  }
 
   this.password = await bcrypt.hash(this.password, 12);
   next();
 });
 
 userSchema.methods.comparePassword = async function comparePassword(candidate) {
+  if (!this.password) {
+    return false;
+  }
+
   return bcrypt.compare(candidate, this.password);
 };
 

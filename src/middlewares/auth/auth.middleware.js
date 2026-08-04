@@ -6,9 +6,7 @@ import { asyncHandler } from '../../utils/asyncHandler.js';
 import { User } from '../../models/user/user.model.js';
 
 export const authenticate = asyncHandler(async (req, _res, next) => {
-  const token =
-    req.cookies?.accessToken ||
-    req.headers.authorization?.replace('Bearer ', '');
+  const token = req.cookies?.accessToken || req.headers.authorization?.replace('Bearer ', '');
 
   if (!token) {
     throw ApiError.unauthorized('Access token required');

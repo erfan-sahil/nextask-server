@@ -10,10 +10,7 @@ const usernameSchema = z
   .string()
   .min(3, 'Username must be at least 3 characters')
   .max(30, 'Username must be at most 30 characters')
-  .regex(
-    /^[a-z0-9_]+$/,
-    'Username may only contain lowercase letters, numbers, and underscores'
-  );
+  .regex(/^[a-z0-9_]+$/, 'Username may only contain lowercase letters, numbers, and underscores');
 
 export const registerSchema = z.object({
   body: z.object({
@@ -29,5 +26,48 @@ export const loginSchema = z.object({
   body: z.object({
     email: z.string().email('Invalid email address'),
     password: z.string().min(1, 'Password is required'),
+  }),
+});
+
+export const verifyEmailSchema = z.object({
+  body: z.object({
+    email: z.string().email('Invalid email address'),
+    otp: z
+      .string()
+      .trim()
+      .regex(/^\d{6}$/, 'Verification code must be a 6-digit number'),
+  }),
+});
+
+export const resendVerificationSchema = z.object({
+  body: z.object({
+    email: z.string().email('Invalid email address'),
+  }),
+});
+
+export const updateProfileSchema = z.object({
+  body: z.object({
+    firstName: z.string().trim().min(1, 'First name is required').max(50),
+    lastName: z.string().trim().min(1, 'Last name is required').max(50),
+    username: usernameSchema,
+  }),
+});
+
+export const changePasswordSchema = z.object({
+  body: z
+    .object({
+      currentPassword: z.string().min(1, 'Current password is required'),
+      newPassword: passwordSchema,
+      confirmPassword: z.string().min(1, 'Please confirm your new password'),
+    })
+    .refine((data) => data.newPassword === data.confirmPassword, {
+      message: 'New passwords do not match',
+      path: ['confirmPassword'],
+    }),
+});
+
+export const deleteAccountSchema = z.object({
+  body: z.object({
+    currentPassword: z.string().min(1, 'Current password is required'),
   }),
 });
