@@ -8,7 +8,7 @@ import { logger } from '../../utils/logger.js';
 import { PendingRegistration } from '../../models/pending-registration/pendingRegistration.model.js';
 import { User } from '../../models/user/user.model.js';
 import { emailService } from '../email/email.service.js';
-import { generateTokens } from './auth.service.js';
+import { addRefreshSession, generateTokens, REFRESH_TOKEN_SELECT } from './auth.service.js';
 
 const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
@@ -181,10 +181,12 @@ const upsertGoogleUser = async (profile) => {
   const { firstName, lastName } = splitDisplayName(profile);
   const avatar = profile.picture || null;
 
-  let user = await User.findOne({ googleId }).select('+googleId +refreshToken');
+  let user = await User.findOne({ googleId }).select(`+googleId ${REFRESH_TOKEN_SELECT}`);
 
   if (!user) {
-    user = await User.findOne({ email }).select('+googleId +password +refreshToken');
+    user = await User.findOne({ email }).select(
+      `+googleId +password ${REFRESH_TOKEN_SELECT}`
+    );
   }
 
   if (user) {
@@ -207,7 +209,7 @@ const upsertGoogleUser = async (profile) => {
 
     const tokens = generateTokens(user._id);
     user.lastLoginAt = new Date();
-    user.refreshToken = tokens.refreshToken;
+    addRefreshSession(user, tokens.refreshToken);
     await user.save({ validateBeforeSave: false });
 
     await PendingRegistration.deleteOne({ email });
@@ -234,7 +236,7 @@ const upsertGoogleUser = async (profile) => {
 
   const tokens = generateTokens(user._id);
   user.lastLoginAt = new Date();
-  user.refreshToken = tokens.refreshToken;
+  addRefreshSession(user, tokens.refreshToken);
   await user.save({ validateBeforeSave: false });
 
   await PendingRegistration.deleteOne({ email });
@@ -299,8 +301,19 @@ export const googleAuthService = {
     return { user, tokens, isNewUser, callbackUrl };
   },
 
-  buildSuccessRedirect(callbackUrl) {
-    return buildClientRedirectUrl(sanitizeCallbackUrl(callbackUrl));
+  buildSuccessRedirect(callbackUrl, tokens) {
+    const url = new URL(buildClientRedirectUrl(sanitizeCallbackUrl(callbackUrl)));
+
+    // Hash keeps tokens out of server logs / Referer while letting the SPA
+    // persist Bearer auth when cross-site cookies are blocked.
+    if (tokens?.accessToken && tokens?.refreshToken) {
+      url.hash = new URLSearchParams({
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+      }).toString();
+    }
+
+    return url.toString();
   },
 
   buildErrorRedirect(message) {

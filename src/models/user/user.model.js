@@ -84,8 +84,15 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    // Legacy single-session field; kept for migration into refreshTokens.
     refreshToken: {
       type: String,
+      select: false,
+    },
+    // Multi-device sessions — one refresh token per active device/session.
+    refreshTokens: {
+      type: [String],
+      default: [],
       select: false,
     },
   },
@@ -95,6 +102,7 @@ const userSchema = new mongoose.Schema(
       transform(_doc, ret) {
         delete ret.password;
         delete ret.refreshToken;
+        delete ret.refreshTokens;
         delete ret.googleId;
         delete ret.emailVerificationOtp;
         delete ret.emailVerificationExpires;
