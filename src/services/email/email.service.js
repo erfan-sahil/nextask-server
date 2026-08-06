@@ -52,36 +52,52 @@ const getLogoBase64 = () => {
   return logoBase64;
 };
 
-const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
+const isValidEmail = (value) =>
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
+
+/** Pull a bare email out of messy env values (quotes, Name <email>, etc.). */
+const extractEmail = (value) => {
+  const cleaned = String(value || '')
+    .trim()
+    .replace(/^["']+|["']+$/g, '');
+
+  if (isValidEmail(cleaned)) {
+    return cleaned;
+  }
+
+  const angled = cleaned.match(/<([^>]+)>/);
+  if (angled && isValidEmail(angled[1].trim())) {
+    return angled[1].trim();
+  }
+
+  const loose = cleaned.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+  if (loose && isValidEmail(loose[0])) {
+    return loose[0];
+  }
+
+  return null;
+};
 
 /** Resolve Brevo sender from dedicated env vars or EMAIL_FROM. */
 const getBrevoSender = () => {
-  const dedicatedEmail = env.brevo.senderEmail?.trim();
-  const dedicatedName = env.brevo.senderName?.trim() || 'NexTask';
+  const dedicatedName = String(env.brevo.senderName || 'NexTask')
+    .trim()
+    .replace(/^["']+|["']+$/g, '') || 'NexTask';
 
-  if (dedicatedEmail && isValidEmail(dedicatedEmail)) {
-    return { name: dedicatedName, email: dedicatedEmail };
+  const email =
+    extractEmail(env.brevo.senderEmail) || extractEmail(env.smtp.from);
+
+  if (!email) {
+    logger.error('Brevo sender email missing or invalid', {
+      brevoSenderEmail: env.brevo.senderEmail,
+      emailFrom: env.smtp.from,
+    });
+    throw new Error(
+      'Valid sender email required. Set BREVO_SENDER_EMAIL=erfansahil20@gmail.com on Render (plain email, no quotes or <>).'
+    );
   }
 
-  // EMAIL_FROM may be `Name <email>` — or truncated to `Name` on Render.
-  const from = String(env.smtp.from || '').trim();
-  const match = from.match(/^(.*)<([^>]+)>$/);
-
-  if (match) {
-    const name = match[1].replace(/^["']|["']$/g, '').trim() || dedicatedName;
-    const email = match[2].trim();
-    if (isValidEmail(email)) {
-      return { name, email };
-    }
-  }
-
-  if (isValidEmail(from)) {
-    return { name: dedicatedName, email: from };
-  }
-
-  throw new Error(
-    'Valid sender email required. Set BREVO_SENDER_EMAIL=your-verified@gmail.com on Render (no angle brackets).'
-  );
+  return { name: dedicatedName, email };
 };
 
 const toFriendlyEmailError = (error) => {
