@@ -26,12 +26,16 @@ export const generateTokens = (userId) => {
   return { accessToken, refreshToken };
 };
 
+// Production uses SameSite=None so auth cookies work across
+// split hosts (e.g. Vercel frontend + Render API).
+const getAuthCookieOptions = () => ({
+  httpOnly: true,
+  secure: env.isProduction,
+  sameSite: env.isProduction ? 'none' : 'lax',
+});
+
 const setTokenCookies = (res, { accessToken, refreshToken }) => {
-  const cookieOptions = {
-    httpOnly: true,
-    secure: env.isProduction,
-    sameSite: env.isProduction ? 'strict' : 'lax',
-  };
+  const cookieOptions = getAuthCookieOptions();
 
   res.cookie('accessToken', accessToken, {
     ...cookieOptions,
@@ -45,8 +49,9 @@ const setTokenCookies = (res, { accessToken, refreshToken }) => {
 };
 
 const clearTokenCookies = (res) => {
-  res.clearCookie('accessToken');
-  res.clearCookie('refreshToken');
+  const cookieOptions = getAuthCookieOptions();
+  res.clearCookie('accessToken', cookieOptions);
+  res.clearCookie('refreshToken', cookieOptions);
 };
 
 const assertActiveUser = (user) => {
