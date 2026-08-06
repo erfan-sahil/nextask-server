@@ -14,6 +14,7 @@ import { buildProjectInvitationEmail } from './templates/projectInvitation.templ
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EMAIL_LOGO_PATH = path.join(__dirname, '../../assets/email/logo.png');
+const BREVO_SEND_URL = 'https://api.brevo.com/v3/smtp/email';
 
 let smtpTransporter = null;
 let resendClient = null;
@@ -51,14 +52,78 @@ const getLogoBase64 = () => {
   return logoBase64;
 };
 
+/** Parse `Name <email@x.com>` or bare email into Brevo sender shape. */
+const parseSender = (from) => {
+  const value = String(from || '').trim();
+  const match = value.match(/^(.*)<([^>]+)>$/);
+
+  if (match) {
+    const name = match[1].replace(/^["']|["']$/g, '').trim();
+    return {
+      name: name || 'NexTask',
+      email: match[2].trim(),
+    };
+  }
+
+  return { name: 'NexTask', email: value };
+};
+
 const toFriendlyEmailError = (error) => {
   logger.error('Email delivery failed', { cause: error.message });
 
+  const message = error.message || '';
+  const expose =
+    message.includes('testing emails') ||
+    message.includes('verify a domain') ||
+    message.includes('sender') ||
+    message.includes('Sender');
+
   return ApiError.serviceUnavailable(
-    error.message?.includes('testing emails') || error.message?.includes('verify a domain')
-      ? error.message
+    expose
+      ? message
       : 'We could not complete your request because the email could not be sent. Please try again later.'
   );
+};
+
+const sendWithBrevo = async ({ to, subject, html, text }) => {
+  const sender = parseSender(env.smtp.from);
+
+  logger.info('Sending email via Brevo', { to, from: sender.email });
+
+  const response = await fetch(BREVO_SEND_URL, {
+    method: 'POST',
+    headers: {
+      accept: 'application/json',
+      'content-type': 'application/json',
+      'api-key': env.brevo.apiKey,
+    },
+    body: JSON.stringify({
+      sender,
+      to: [{ email: to }],
+      subject,
+      htmlContent: html,
+      textContent: text,
+      attachment: [
+        {
+          name: 'logo.png',
+          content: getLogoBase64(),
+        },
+      ],
+    }),
+  });
+
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const detail =
+      payload?.message ||
+      payload?.error ||
+      (Array.isArray(payload?.code) ? payload.code.join(', ') : payload?.code) ||
+      `Brevo request failed (${response.status})`;
+    throw new Error(detail);
+  }
+
+  return payload;
 };
 
 const sendWithResend = async ({ to, subject, html, text }) => {
@@ -111,16 +176,21 @@ const sendWithSmtp = async ({ to, subject, html, text }) => {
 
 export const emailService = {
   async send({ to, subject, html, text }) {
+    const hasBrevo = Boolean(env.brevo.apiKey?.trim());
     const hasResend = Boolean(env.resend.apiKey?.trim());
     const hasSmtp = Boolean(env.smtp.host && env.smtp.user);
 
-    if (!hasResend && !hasSmtp) {
+    if (!hasBrevo && !hasResend && !hasSmtp) {
       logger.warn('Email not configured — skipping send');
       return null;
     }
 
     try {
-      // Prefer Resend (HTTPS). Render free tier blocks SMTP ports.
+      // Brevo first (HTTPS, works on free Render without a custom domain).
+      if (hasBrevo) {
+        return await sendWithBrevo({ to, subject, html, text });
+      }
+
       if (hasResend) {
         return await sendWithResend({ to, subject, html, text });
       }
