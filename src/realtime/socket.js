@@ -19,7 +19,9 @@ export const initializeSocketServer = (httpServer) => {
 
   io.use(async (socket, next) => {
     try {
-      const accessToken = cookie.parse(socket.handshake.headers.cookie ?? '').accessToken;
+      const accessToken =
+        socket.handshake.auth?.token ||
+        cookie.parse(socket.handshake.headers.cookie ?? '').accessToken;
       if (!accessToken) return next(new Error('Authentication required'));
       const { id } = jwt.verify(accessToken, env.jwt.accessSecret);
       const user = await User.findById(id).select('_id status');

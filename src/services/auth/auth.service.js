@@ -13,6 +13,8 @@ import { emailService } from '../email/email.service.js';
 
 const ACCESS_TOKEN_MAX_AGE_MS = 15 * 60 * 1000;
 const REFRESH_TOKEN_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+const MAX_REFRESH_SESSIONS = 10;
+export const REFRESH_TOKEN_SELECT = '+refreshToken +refreshTokens';
 
 export const generateTokens = (userId) => {
   const accessToken = jwt.sign({ id: userId }, env.jwt.accessSecret, {
@@ -60,9 +62,57 @@ const assertActiveUser = (user) => {
   }
 };
 
-const persistRefreshToken = async (user, refreshToken) => {
-  user.refreshToken = refreshToken;
-  await user.save({ validateBeforeSave: false });
+const listRefreshSessions = (user) => {
+  if (Array.isArray(user.refreshTokens) && user.refreshTokens.length > 0) {
+    return [...user.refreshTokens];
+  }
+
+  // Migrate legacy single-session token.
+  if (user.refreshToken) {
+    return [user.refreshToken];
+  }
+
+  return [];
+};
+
+const writeRefreshSessions = (user, tokens) => {
+  user.refreshTokens = tokens;
+  user.refreshToken = undefined;
+};
+
+export const addRefreshSession = (user, refreshToken) => {
+  const tokens = listRefreshSessions(user).filter((token) => token !== refreshToken);
+  tokens.push(refreshToken);
+
+  while (tokens.length > MAX_REFRESH_SESSIONS) {
+    tokens.shift();
+  }
+
+  writeRefreshSessions(user, tokens);
+};
+
+const replaceRefreshSession = (user, currentRefreshToken, nextRefreshToken) => {
+  const tokens = listRefreshSessions(user);
+  const index = tokens.indexOf(currentRefreshToken);
+
+  if (index === -1) {
+    return false;
+  }
+
+  tokens[index] = nextRefreshToken;
+  writeRefreshSessions(user, tokens);
+  return true;
+};
+
+const removeRefreshSession = (user, refreshToken) => {
+  writeRefreshSessions(
+    user,
+    listRefreshSessions(user).filter((token) => token !== refreshToken)
+  );
+};
+
+const clearRefreshSessions = (user) => {
+  writeRefreshSessions(user, []);
 };
 
 const assignVerificationOtp = (record) => {
@@ -192,7 +242,9 @@ export const authService = {
       );
     }
 
-    const user = await User.findOne({ email }).select('+password +refreshToken +googleId');
+    const user = await User.findOne({ email }).select(
+      `+password +googleId ${REFRESH_TOKEN_SELECT}`
+    );
 
     if (!user) {
       throw ApiError.unauthorized('Invalid email or password');
@@ -212,7 +264,7 @@ export const authService = {
 
     const tokens = generateTokens(user._id);
     user.lastLoginAt = new Date();
-    user.refreshToken = tokens.refreshToken;
+    addRefreshSession(user, tokens.refreshToken);
     await user.save({ validateBeforeSave: false });
 
     user.password = undefined;
@@ -271,7 +323,7 @@ export const authService = {
       });
 
       const tokens = generateTokens(user._id);
-      user.refreshToken = tokens.refreshToken;
+      addRefreshSession(user, tokens.refreshToken);
       await user.save({ session, validateBeforeSave: false });
 
       await session.commitTransaction();
@@ -350,22 +402,38 @@ export const authService = {
       throw ApiError.unauthorized('Invalid or expired refresh token');
     }
 
-    const user = await User.findById(decoded.id).select('+refreshToken');
+    const user = await User.findById(decoded.id).select(REFRESH_TOKEN_SELECT);
 
-    if (!user || user.refreshToken !== refreshToken) {
+    if (!user || !listRefreshSessions(user).includes(refreshToken)) {
       throw ApiError.unauthorized('Invalid refresh token');
     }
 
     assertActiveUser(user);
 
     const tokens = generateTokens(user._id);
-    await persistRefreshToken(user, tokens.refreshToken);
+
+    if (!replaceRefreshSession(user, refreshToken, tokens.refreshToken)) {
+      throw ApiError.unauthorized('Invalid refresh token');
+    }
+
+    await user.save({ validateBeforeSave: false });
 
     return { user, tokens };
   },
 
-  async logout(userId, res) {
-    await User.findByIdAndUpdate(userId, { refreshToken: null });
+  async logout(userId, refreshToken, res) {
+    const user = await User.findById(userId).select(REFRESH_TOKEN_SELECT);
+
+    if (user) {
+      if (refreshToken) {
+        removeRefreshSession(user, refreshToken);
+      } else {
+        clearRefreshSessions(user);
+      }
+
+      await user.save({ validateBeforeSave: false });
+    }
+
     clearTokenCookies(res);
   },
 
@@ -398,7 +466,7 @@ export const authService = {
   },
 
   async changePassword(userId, { currentPassword, newPassword }) {
-    const user = await User.findById(userId).select('+password');
+    const user = await User.findById(userId).select(`+password ${REFRESH_TOKEN_SELECT}`);
 
     if (!user) {
       throw ApiError.notFound('User not found');
@@ -419,7 +487,7 @@ export const authService = {
     }
 
     user.password = newPassword;
-    user.refreshToken = null;
+    clearRefreshSessions(user);
     await user.save();
 
     return user;
@@ -446,4 +514,6 @@ export const authService = {
 
   generateTokens,
   setTokenCookies,
+  addRefreshSession,
+  REFRESH_TOKEN_SELECT,
 };

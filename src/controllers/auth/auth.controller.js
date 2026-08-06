@@ -4,6 +4,12 @@ import { ApiResponse } from '../../utils/ApiResponse.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 import { logger } from '../../utils/logger.js';
 
+const authTokenPayload = (user, tokens) => ({
+  user,
+  accessToken: tokens.accessToken,
+  refreshToken: tokens.refreshToken,
+});
+
 export const register = asyncHandler(async (req, res) => {
   const { email, verificationEmailSent } = await authService.register(req.body);
 
@@ -19,23 +25,24 @@ export const login = asyncHandler(async (req, res) => {
 
   authService.setTokenCookies(res, tokens);
 
-  res.json(ApiResponse.ok({ user, accessToken: tokens.accessToken }, 'Login successful'));
+  res.json(ApiResponse.ok(authTokenPayload(user, tokens), 'Login successful'));
 });
 
 export const refresh = asyncHandler(async (req, res) => {
-  const refreshToken = req.cookies?.refreshToken;
+  const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
 
   const { user, tokens } = await authService.refresh(refreshToken);
 
   authService.setTokenCookies(res, tokens);
 
   res.json(
-    ApiResponse.ok({ user, accessToken: tokens.accessToken }, 'Token refreshed successfully')
+    ApiResponse.ok(authTokenPayload(user, tokens), 'Token refreshed successfully')
   );
 });
 
 export const logout = asyncHandler(async (req, res) => {
-  await authService.logout(req.user._id, res);
+  const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
+  await authService.logout(req.user._id, refreshToken, res);
   res.json(ApiResponse.ok(null, 'Logged out successfully'));
 });
 
@@ -61,7 +68,12 @@ export const verifyEmail = asyncHandler(async (req, res) => {
     ApiResponse.ok(
       {
         user,
-        ...(tokens ? { accessToken: tokens.accessToken } : {}),
+        ...(tokens
+          ? {
+              accessToken: tokens.accessToken,
+              refreshToken: tokens.refreshToken,
+            }
+          : {}),
       },
       message
     )
@@ -111,7 +123,7 @@ export const googleAuthCallback = asyncHandler(async (req, res) => {
     });
 
     authService.setTokenCookies(res, tokens);
-    res.redirect(googleAuthService.buildSuccessRedirect(callbackUrl));
+    res.redirect(googleAuthService.buildSuccessRedirect(callbackUrl, tokens));
   } catch (error) {
     logger.error('Google OAuth callback failed', {
       cause: error.message,
