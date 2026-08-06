@@ -22,7 +22,8 @@ export const escapeHtml = (value) =>
 
 export const getCurrentYear = () => new Date().getFullYear();
 
-export const EMAIL_LOGO_CID = 'nextask-logo@nextask';
+// Keep this simple — Resend rejects email-like content IDs.
+export const EMAIL_LOGO_CID = 'nextask-logo';
 
 const c = emailColors;
 
