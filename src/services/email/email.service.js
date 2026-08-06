@@ -52,20 +52,36 @@ const getLogoBase64 = () => {
   return logoBase64;
 };
 
-/** Parse `Name <email@x.com>` or bare email into Brevo sender shape. */
-const parseSender = (from) => {
-  const value = String(from || '').trim();
-  const match = value.match(/^(.*)<([^>]+)>$/);
+const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
 
-  if (match) {
-    const name = match[1].replace(/^["']|["']$/g, '').trim();
-    return {
-      name: name || 'NexTask',
-      email: match[2].trim(),
-    };
+/** Resolve Brevo sender from dedicated env vars or EMAIL_FROM. */
+const getBrevoSender = () => {
+  const dedicatedEmail = env.brevo.senderEmail?.trim();
+  const dedicatedName = env.brevo.senderName?.trim() || 'NexTask';
+
+  if (dedicatedEmail && isValidEmail(dedicatedEmail)) {
+    return { name: dedicatedName, email: dedicatedEmail };
   }
 
-  return { name: 'NexTask', email: value };
+  // EMAIL_FROM may be `Name <email>` — or truncated to `Name` on Render.
+  const from = String(env.smtp.from || '').trim();
+  const match = from.match(/^(.*)<([^>]+)>$/);
+
+  if (match) {
+    const name = match[1].replace(/^["']|["']$/g, '').trim() || dedicatedName;
+    const email = match[2].trim();
+    if (isValidEmail(email)) {
+      return { name, email };
+    }
+  }
+
+  if (isValidEmail(from)) {
+    return { name: dedicatedName, email: from };
+  }
+
+  throw new Error(
+    'Valid sender email required. Set BREVO_SENDER_EMAIL=your-verified@gmail.com on Render (no angle brackets).'
+  );
 };
 
 const toFriendlyEmailError = (error) => {
@@ -86,7 +102,7 @@ const toFriendlyEmailError = (error) => {
 };
 
 const sendWithBrevo = async ({ to, subject, html, text }) => {
-  const sender = parseSender(env.smtp.from);
+  const sender = getBrevoSender();
 
   logger.info('Sending email via Brevo', { to, from: sender.email });
 
