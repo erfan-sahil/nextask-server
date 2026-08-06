@@ -29,6 +29,9 @@ export const env = {
   // Prefer Brevo/Resend HTTPS APIs on Render free (SMTP ports are blocked).
   brevo: {
     apiKey: process.env.BREVO_API_KEY,
+    // Prefer plain email — Render env UI often strips <...> from EMAIL_FROM.
+    senderEmail: process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_FROM,
+    senderName: process.env.BREVO_SENDER_NAME || 'NexTask',
   },
 
   resend: {
